@@ -24,6 +24,9 @@
     .input-line { display: flex; align-items: center; margin: 5px 0; }
     .prompt { font-weight: bold; margin-right: 5px; }
     #commandInput { background: transparent; border: none; color: #0f0; font-family: "Courier New", Courier, monospace; font-size: 1em; outline: none; width: 80%; }
+    .underline {text-decoration: underline;}
+    .flash {animation: flash 3s infinite;}
+    @keyframes flash {0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; }}
     @media (max-width: 768px) {
       #sidebar { display: none; }
       #main { margin-left: 0; }
@@ -72,7 +75,9 @@
       </div>
     </div>
     <div id="terminal">
-      <div class="line">Welcome to Dawid Perkowski's rsme Terminal</div>
+      <div class="line">
+        Resume Terminal for<span class="">: <span class="underline , flash">Dawid Perkowski</span>
+      </div>      
       <div class="line">Type a command below.</div>
       <br>
       <div id="output"></div>
@@ -89,7 +94,7 @@
       pendingTimeouts = [];
     }
     const resumeHeader = `Dawid Perkowski
-(610) 741-3093 | dperkowski8585@gmail.com | www.linkedin.com/in/dawid-perkowski
+www.linkedin.com/in/dawid-perkowski
 
 Innovative .NET Developer and U.S. Marine Corps Veteran with a proven track record of delivering high-quality, scalable software solutions.
 Skilled in both backend and frontend technologies, committed to creating seamless, user-focused experiences.
@@ -108,10 +113,10 @@ Version Control & CI/CD: Git (GitLab, GitHub), Flyway, Jira;
 AI & Automation: ChatGPT & AI tool integration;
 Methodologies & Testing: Agile Scrum, TDD (nUnit, xUnit, Moq);`;
     const resumeExperience = `PROFESSIONAL EXPERIENCE
-Dept of Health (ACF/ORR)                            Remote
-Senior Software Engineering Lead        September 2024 – Present
-Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of clients in multiple environments, using Oracle SQL as the database language.
 
+Dept of Health (ACF/ORR)                                                                                                            Remote
+Senior Software Engineering Lead                                                                                                    September 2024 – Present
+Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of clients in multiple environments, using Oracle SQL as the database language.
 ● Lead multiple software technology teams, overseeing end-to-end development processes for mission-critical applications.
 ● Modernize legacy codebases and introduce AI-driven features to optimize workflows and enhance user experiences.
 ● Establish coding standards, architectural guidelines, and best practices to ensure maintainable, high-quality software.
@@ -119,18 +124,17 @@ Developed, maintained, enhanced, and troubleshot multiple Web Applications used 
 ● Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
 ● Utilize .NET, Palantir Foundry, Java, Go, React, Next.js, Python, Kafka, GraphQL, REST APIs, and Oracle DB to deliver secure, scalable solutions.
 
-WedWallet          Remote
-Founding Engineer          May 2024 – Present
+WedWallet                                                                                                                             San Francisco, CA
+Founding Engineer                                                                                                                     May 2024 – Present
 ● Spearhead the design and development of a fintech startup from the ground up, implementing modern .NET API standards.
 ● Architect and build core platform features using .NET Aspire, Appwrite, Supabase, and other cloud-native services.
 ● Oversee continuous integration and deployment pipelines, ensuring rapid and reliable feature releases.
 ● Collaborate closely with stakeholders to refine product requirements, deliver proof-of-concepts, and guide product roadmap.
 ● Implement best practices around security, scalability, and fault tolerance to support the platform’s growth trajectory.
 
-ALPHA OMEGA INTEGRATION         Washington, D.C.
-Full-time; .NET Software Developer         June 2020 – Present
+ALPHA OMEGA INTEGRATION                                                                                                               Washington, D.C.
+.NET Software Developer                                                                                                    June 2020 – Present
 Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of classified clients in a .NET environment, using Oracle SQL as the database language.
-
 ● Designed and developed over 20 features for two critical Web Applications used by classified government agencies, utilizing .NET, C#, and Oracle SQL.
 ● Upgraded legacy systems, reducing help desk tickets by 30% and troubleshooting time by over 50%.
 ● Implemented modern front-end solutions with Angular, HTML, CSS, and Bootstrap, improving user interface and user experience.
@@ -139,15 +143,15 @@ Developed, maintained, enhanced, and troubleshot multiple Web Applications used 
 ● Created unit and smoke tests for CI/CD pipelines, ensuring robust deployments.
 ● Participated in client meetings, providing technical input to enhance software quality and process efficiency.
 
-UNITED STATES MARINE CORPS      Jacksonville, NC / Twentynine Palms, CA
-Sergeant; Quality Assurance Supervisor        Sept. 2018 – Dec. 2019
+UNITED STATES MARINE CORPS                                                                                                            Jacksonville, NC / Twentynine Palms, CA
+Sergeant; Quality Assurance Supervisor                                                                                                Sept. 2018 – Dec. 2019
 ● Managed an inventory of $17 million worth of support equipment for repairing and troubleshooting military aircraft.
 ● Supervised and quality inspected 400+ no-fail avionics gear for Bell-Boeing’s most advanced aircraft.
 ● Led preparations for large-scale scheduled and unscheduled inspections that resulted in a 100% pass rate.
 ● Ensured strict compliance with aviation standards, policies and procedures while maintaining a high degree of efficiency.
 
-Corporal; Project Manager         Mar. 2018 – Sept. 2018
-Various Ranks; Technical Supervisor, Avionics Engineer      Mar. 2015 – Mar. 2018`;
+Corporal; Project Manager                                                                                                             Mar. 2018 – Sept. 2018
+Various Ranks; Technical Supervisor, Avionics Engineer                                                                                Mar. 2015 – Mar. 2018`;
     const resumeCertifications = `CERTIFICATIONS / EDUCATION
 Certifications:
 ● Azure Fundamentals AZ-900
