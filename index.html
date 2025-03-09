@@ -40,15 +40,16 @@
   <div id="sidebar">
     <h2>Commands</h2>
     <ul>
-      <li><button class="cmdButton" data-cmd="help">help - List commands</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -fl">rsme -fl - Full resume</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -hd">rsme -hd - Header / Contact info</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -sk">rsme -sk - Skills &amp; qualifications</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ex">rsme -ex - Experience</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ce">rsme -ce - Certifications / Education</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ad">rsme -ad - Additional info</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ct">rsme -ct - Contact info</button></li>
-      <li><button class="cmdButton" data-cmd="cl">cl - Clear terminal</button></li>
+      <li><button class="cmdButton" data-cmd="help">- help <br> List commands</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -fl">- rsme -fl <br> Full resume</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -dwnld">- rsme -dwnld <br> Download Resume</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -hd">- rsme -hd <br> Header </button></li>
+      <li><button class="cmdButton" data-cmd="rsme -sk">- rsme -sk <br> Skills &amp; qualifications</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ex">- rsme -ex <br> Experience</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ce">- rsme -ce <br> Certifications / Education</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ad">- rsme -ad <br> Additional info</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ct">- rsme -ct <br> Contact info</button></li>
+      <li><button class="cmdButton" data-cmd="cl">- cl <br> Clear terminal</button></li>
     </ul>
   </div>
   <div id="main">
@@ -70,6 +71,7 @@
         <button data-cmd="rsme -ex">rsme -ex</button>
         <button data-cmd="rsme -ce">rsme -ce</button>
         <button data-cmd="rsme -ad">rsme -ad</button>
+        <button data-cmd="rsme -dwnld">rsme -dwnld</button>
         <button data-cmd="rsme -ct">rsme -ct</button>
         <button data-cmd="cl">cl</button>
       </div>
@@ -180,7 +182,8 @@ ${resumeAdditional}`;
       "help": function() { return `Available commands:
 help       - List commands
 rsme -fl  - Full resume
-rsme -hd  - Header / Contact info
+rsme -dwnld  - Resume download
+rsme -hd  - Header 
 rsme -sk  - Skills & qualifications
 rsme -ex  - Experience
 rsme -ce  - Certifications / Education
@@ -278,6 +281,10 @@ LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
         ];
         return pokemonArts[Math.floor(Math.random() * pokemonArts.length)];
       },
+      "rsme -dwnld": function() {
+          window.open("Dawid_Perkowski_Resume.pdf", "_blank");
+          return "Opening resume in a new window...";
+        },
       "rr": function() {
         const url = "https://www.youtube.com/watch?v=uHgt8giw1LY";
         const newWin = window.open(url, "_blank", "toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
@@ -318,7 +325,7 @@ LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
     }
     function executeCommand(cmd) {
       clearAllTimeouts();
-      if(cmd.trim() !== "") {
+      if (cmd.trim() !== "") {
         commandHistory.push(cmd);
         historyIndex = commandHistory.length;
       }
@@ -326,20 +333,30 @@ LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
       commandLine.className = 'line';
       commandLine.textContent = '> ' + cmd;
       outputDiv.appendChild(commandLine);
+
+      const normalizedCmd = cmd.toLowerCase();
+
       if (Math.random() < 1/6) {
         const overrideCmd = Math.random() < 0.5 ? "pokemon" : "rr";
         const response = commands[overrideCmd]();
-        if (response) { const lines = response.split('\n'); typeMultipleLines(lines); }
+        if (response) {
+          const lines = response.split('\n');
+          typeMultipleLines(lines);
+        }
       } else {
-        if (commands[cmd]) {
-          const response = commands[cmd]();
-          if (response) { const lines = response.split('\n'); typeMultipleLines(lines); }
+        if (commands[normalizedCmd]) {
+          const response = commands[normalizedCmd]();
+          if (response) {
+            const lines = response.split('\n');
+            typeMultipleLines(lines);
+          }
         } else {
           typeLine('Command not found. Type "help" for available commands.');
         }
       }
       document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
     }
+
     commandInput.addEventListener('keydown', function(event) {
       if (event.key === 'Enter') {
         const cmd = commandInput.value.trim();
@@ -374,3 +391,9 @@ LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
   </script>
 </body>
 </html>
+
+
+
+
+
+
