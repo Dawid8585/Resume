@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dawid Perkowski's rsme Terminal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; padding: 0; background-color: black; color: #0f0; font-family: "Courier New", Courier, monospace; overflow: hidden; }
+    #sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background-color: black; border-right: 1px solid #0f0; padding: 20px; box-sizing: border-box; }
+    #sidebar h2 { margin-top: 0; font-size: 1.4em; text-align: center; border-bottom: 1px solid #0f0; padding-bottom: 10px; }
+    #sidebar ul { list-style: none; padding: 0; margin: 20px 0 0 0; line-height: 1.6em; }
+    #sidebar li { margin-bottom: 8px; }
+    .cmdButton { background: none; border: none; color: #0f0; font-family: inherit; font-size: 1em; text-align: left; width: 100%; cursor: pointer; padding: 0; }
+    #main { margin-left: 240px; height: 100vh; display: flex; flex-direction: column; }
+    #header { text-align: center; padding: 20px; white-space: pre; }
+    #header span { font-size: 0.7em; display: block; margin-top: 10px; }
+    #mobileNavContainer { display: none; padding: 10px; background: black; border-bottom: 1px solid #0f0; }
+    #menuButton { background: transparent; border: 1px solid #0f0; color: #0f0; padding: 10px; width: 100%; font-size: 1em; }
+    #mobileNav { display: none; flex-wrap: wrap; justify-content: center; background: black; padding: 10px 0; }
+    #mobileNav button { background: transparent; border: 1px solid #0f0; color: #0f0; margin: 5px; padding: 5px 10px; font-size: 0.9em; cursor: pointer; }
+    #terminal { flex-grow: 1; padding: 20px; box-sizing: border-box; overflow-y: scroll; -ms-overflow-style: none; scrollbar-width: none; }
+    #terminal::-webkit-scrollbar { display: none; }
+    .line { margin: 5px 0; white-space: pre-wrap; }
+    .input-line { display: flex; align-items: center; margin: 5px 0; }
+    .prompt { font-weight: bold; margin-right: 5px; }
+    #commandInput { background: transparent; border: none; color: #0f0; font-family: "Courier New", Courier, monospace; font-size: 1em; outline: none; width: 80%; }
+    @media (max-width: 768px) {
+      #sidebar { display: none; }
+      #main { margin-left: 0; }
+      #header { padding: 10px; }
+      #mobileNavContainer { display: block; }
+      #terminal { padding: 10px; height: calc(100vh - 200px); }
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h2>Commands</h2>
+    <ul>
+      <li><button class="cmdButton" data-cmd="help">help - List commands</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -fl">rsme -fl - Full resume</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -hd">rsme -hd - Header / Contact info</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -sk">rsme -sk - Skills &amp; qualifications</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ex">rsme -ex - Experience</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ce">rsme -ce - Certifications / Education</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ad">rsme -ad - Additional info</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ct">rsme -ct - Contact info</button></li>
+      <li><button class="cmdButton" data-cmd="cl">cl - Clear terminal</button></li>
+    </ul>
+  </div>
+  <div id="main">
+    <div id="header">
+ ____  _____ ____  _   _ __  __ _____ 
+|  _ \| ____/ ___|| | | |  \/  | ____|
+| |_) |  _| \___ \| | | | |\/| |  _|  
+|  _ <| |___ ___) | |_| | |  | | |___ 
+|_| \_\_____|____/ \___/|_|  |_|_____|
+      <span>by dawid perkowski</span>
+    </div>
+    <div id="mobileNavContainer">
+      <button id="menuButton">Menu</button>
+      <div id="mobileNav">
+        <button data-cmd="help">help</button>
+        <button data-cmd="rsme -fl">rsme -fl</button>
+        <button data-cmd="rsme -hd">rsme -hd</button>
+        <button data-cmd="rsme -sk">rsme -sk</button>
+        <button data-cmd="rsme -ex">rsme -ex</button>
+        <button data-cmd="rsme -ce">rsme -ce</button>
+        <button data-cmd="rsme -ad">rsme -ad</button>
+        <button data-cmd="rsme -ct">rsme -ct</button>
+        <button data-cmd="pokemon">pokemon</button>
+        <button data-cmd="rr">rr</button>
+        <button data-cmd="cl">cl</button>
+      </div>
+    </div>
+    <div id="terminal">
+      <div class="line">Welcome to Dawid Perkowski's rsme Terminal</div>
+      <div class="line">Type a command below.</div>
+      <br>
+      <div id="output"></div>
+      <div class="input-line">
+        <span class="prompt">&gt;</span>
+        <input type="text" id="commandInput" autofocus>
+      </div>
+    </div>
+  </div>
+  <script>
+    let pendingTimeouts = [];
+    function clearAllTimeouts() {
+      pendingTimeouts.forEach(id => clearTimeout(id));
+      pendingTimeouts = [];
+    }
+    const resumeHeader = `Dawid Perkowski
+(610) 741-3093 | dperkowski8585@gmail.com | www.linkedin.com/in/dawid-perkowski
+
+Innovative .NET Developer and U.S. Marine Corps Veteran with a proven track record of delivering high-quality, scalable software solutions.
+Skilled in both backend and frontend technologies, committed to creating seamless, user-focused experiences.
+Brings discipline, leadership, and a relentless drive for continuous improvement.
+Thrives in collaborative environments, sharing knowledge and fostering teamwork to consistently ensure project success.`;
+    const resumeSkills = `SKILLS & QUALIFICATIONS
+Programming & Scripting Languages: C#, Java, Go, Python, JavaScript/TypeScript;
+Frameworks & Libraries: .NET (ASP.NET, .NET MVC), Node.js, React, Next.js, Angular, Blazor, Palantir Foundry;
+Web Services & APIs: GraphQL, RESTful APIs, SOAP;
+Frontend & UI: HTML/CSS, Bootstrap;
+Languages: Native Bilingual (Polish and English).
+
+Cloud & DevOps: AWS, Azure (Cloud Services, DevOps), GitLab, Azure DevOps, Dynatrace, Guacamole, SonarQube, Docker, Kafka;
+Databases: Oracle, PostgreSQL, SQL Server, MySQL, Appwrite, Supabase;
+Version Control & CI/CD: Git (GitLab, GitHub), Flyway, Jira;
+AI & Automation: ChatGPT & AI tool integration;
+Methodologies & Testing: Agile Scrum, TDD (nUnit, xUnit, Moq);`;
+    const resumeExperience = `PROFESSIONAL EXPERIENCE
+Dept of Health (ACF/ORR)                            Remote
+Senior Software Engineering Lead        September 2024 – Present
+Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of clients in multiple environments, using Oracle SQL as the database language.
+
+● Lead multiple software technology teams, overseeing end-to-end development processes for mission-critical applications.
+● Modernize legacy codebases and introduce AI-driven features to optimize workflows and enhance user experiences.
+● Establish coding standards, architectural guidelines, and best practices to ensure maintainable, high-quality software.
+● Review processes and code to identify improvements, boost team efficiency, and align development efforts with strategic objectives.
+● Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
+● Utilize .NET, Palantir Foundry, Java, Go, React, Next.js, Python, Kafka, GraphQL, REST APIs, and Oracle DB to deliver secure, scalable solutions.
+
+WedWallet          Remote
+Founding Engineer          May 2024 – Present
+● Spearhead the design and development of a fintech startup from the ground up, implementing modern .NET API standards.
+● Architect and build core platform features using .NET Aspire, Appwrite, Supabase, and other cloud-native services.
+● Oversee continuous integration and deployment pipelines, ensuring rapid and reliable feature releases.
+● Collaborate closely with stakeholders to refine product requirements, deliver proof-of-concepts, and guide product roadmap.
+● Implement best practices around security, scalability, and fault tolerance to support the platform’s growth trajectory.
+
+ALPHA OMEGA INTEGRATION         Washington, D.C.
+Full-time; .NET Software Developer         June 2020 – Present
+Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of classified clients in a .NET environment, using Oracle SQL as the database language.
+
+● Designed and developed over 20 features for two critical Web Applications used by classified government agencies, utilizing .NET, C#, and Oracle SQL.
+● Upgraded legacy systems, reducing help desk tickets by 30% and troubleshooting time by over 50%.
+● Implemented modern front-end solutions with Angular, HTML, CSS, and Bootstrap, improving user interface and user experience.
+● Led a team in transitioning from a legacy version control system to Git DevOps, completing the project in two months.
+● Developed microservices and RESTful APIs, focusing on API security and performance optimization.
+● Created unit and smoke tests for CI/CD pipelines, ensuring robust deployments.
+● Participated in client meetings, providing technical input to enhance software quality and process efficiency.
+
+UNITED STATES MARINE CORPS      Jacksonville, NC / Twentynine Palms, CA
+Sergeant; Quality Assurance Supervisor        Sept. 2018 – Dec. 2019
+● Managed an inventory of $17 million worth of support equipment for repairing and troubleshooting military aircraft.
+● Supervised and quality inspected 400+ no-fail avionics gear for Bell-Boeing’s most advanced aircraft.
+● Led preparations for large-scale scheduled and unscheduled inspections that resulted in a 100% pass rate.
+● Ensured strict compliance with aviation standards, policies and procedures while maintaining a high degree of efficiency.
+
+Corporal; Project Manager         Mar. 2018 – Sept. 2018
+Various Ranks; Technical Supervisor, Avionics Engineer      Mar. 2015 – Mar. 2018`;
+    const resumeCertifications = `CERTIFICATIONS / EDUCATION
+Certifications:
+● Azure Fundamentals AZ-900
+● Azure AI Fundamentals AI-900
+● MTA: Software Development Fundamentals
+● MSSA Microsoft Software Systems Academy
+
+Education:
+Microsoft - Software and Systems Academy (MSSA) Trainee`;
+    const resumeAdditional = `ADDITIONAL INFORMATION
+Volunteer work: Firefighter at Exeter Township Fire Station (June 2014 – March 2015); 
+Equestrian volunteer at Cloverleaf Equine Center Nonprofit, Equestrian Therapy for Disabled Children (June 2020 – Present).
+Interests: Film photography, rock climbing, camping, car technologies, soccer
+
+http://www.linkedin.com/in/dawid-perkowski`;
+    const resumeFull = `${resumeHeader}
+
+${resumeSkills}
+
+${resumeExperience}
+
+${resumeCertifications}
+
+${resumeAdditional}`;
+    const commands = {
+      "help": function() { return `Available commands:
+help       - List commands
+rsme -fl  - Full resume
+rsme -hd  - Header / Contact info
+rsme -sk  - Skills & qualifications
+rsme -ex  - Experience
+rsme -ce  - Certifications / Education
+rsme -ad  - Additional info
+rsme -ct  - Contact info
+pokemon, terminal, cmd, mac - Random Pokémon art
+rr         - Redirect to YouTube in full screen
+cl or clear - Clear terminal`; },
+      "rsme -fl": function() { return resumeFull; },
+      "rsme -hd": function() { return resumeHeader; },
+      "rsme -sk": function() { return resumeSkills; },
+      "rsme -ex": function() { return resumeExperience; },
+      "rsme -ce": function() { return resumeCertifications; },
+      "rsme -ad": function() { return resumeAdditional; },
+      "rsme -ct": function() { return `Contact Information:
+Phone: (610) 741-3093
+Email: dperkowski8585@gmail.com
+LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
+      "pokemon": function() {
+        const pokemonArts = [
+`__                                _.--'"7
+\`. \`--._                        ,-'_,-  ,'
+ ,'  \`-.\\\`-.                   /' .'    ,|
+ \`.     \`. \`-     __...___   /  /     - j
+   \`.     \`  \`.-""        " .  /       /
+     \\     /                \` /       /
+      \\   /                         ,'
+      '._'_               ,-'       |
+         | \\            ,|  |   ...-'
+         || \`         ,|_|  |   | \`             _..__
+        /|| |          | |  |   |  \\  _,_    .-"     \`-.
+       | '.-'          |_|_,' __!  | /|  |  /           \\
+,-...___ .=                  ._..'  /\`.| ,\`,.      _,.._ |
+|   |,.. \\     '  \`'        ____,  ,' \`--','  |    /      |
+,\`-..'  _)  .\`-..___,---'_...._/  .'      '-...'   |      /
+'.__' ""'      \`.,------'"'      ,/            ,     \`.._.' \`.
+\`.             | \`--........,-'.            .         \\     \\
+\`-.          .   '.,--""     |           ,'\`        |      .
+   \`.       /     |          L          ,\\  .       |  .,---.
+     \`._   '      |           \\        /  .  L      | /   __ \`.
+        \`-.       |            \`._   ,    l   .    j |   '  \`. .
+          |       |               \`"' |  .    |   /  '      .' |
+          |       |                   j  |    |  /  , \`.__,'   |
+          \`.      L                 _.   \`    j ,'-'           |
+           |\`"---..\\._______,...,--' |   |   /|'      /        j
+           '       |                 |   .  / |      '        /
+            .      .              ____L   \\'  j    -',       /
+           / \`.     .          _,"     \\   | /  ,-','      ,'
+          /    \`.  ,'\`-._     /         \\  i'.,'_,'      .'
+         .       \`.      \`-..'             |_,-'      _.'
+         |         \`._      |            ''/      _,-'
+         |            '-..._\\             \`__,.--'
+        ,'           ,' \`-.._\`.            .
+       \`.    __      |       "'\`.          |
+         \`-"'  \`""""'            7         \`.
+                                \`---'--.,'"\`'`,
+`                  ,-'\`\\
+                  _,"'    j
+           __....+       /               . 
+       ,-'"             /               ; \`-._.'.
+      /                (              ,'       .'
+     |            _.    \\             \\   ---._ \`-.
+     ,|    ,   _.'  Y    \\             \`- ,'   \\   \`.\`.
+     l'    \\ ,'._,\\ \`.    .              /       ,--. l
+  .,-        \`._  |  |    |              \\       _   l .
+ /              \`"--'    /              .'       \`\`.\` |  )
+.\\    ,                 |                .        \\ \`\`. '
+\\\`\.                .     |                '._  __   ;. \`'
+  \`-..--------...'       \\                  '\`  \`-"'.  \\
+      \`......___          \`._                        |  \\
+               /\`            \`..                     |   .
+              /|                \`-.                  |    L
+             / |               \\   \`._               .    |
+           ,'\`  |,-"-.\   .       .     \`.\            /     |
+         ,'\`    |     '   \\      |       \`.\         /      |
+       ,'\`     /|       \\  .     |         .       /       |
+     ,'\`      / |        \\  .    +          \\    ,'       .'
+    .       .  |         \\ |     \\          \\_,'        / j
+    |       |  L          \`|      .          \        ,' '
+    |    _. |   \\          /      |           .     .' ,'
+    |   /  \`|    \\        .       |  /        |   ,' .'
+    |   ,-..\\     -.     ,        | /         |,.' ,'
+    \`\. |___,\\    /  \`.\   /\`.\       '          |  .'
+      '-\`-'     j     \` /."7-..../|          ,\`-'
+                |        .'  / _/_|          .
+                \`,       \`"'/"'    \\          \`.
+                  \`,       '.       \`.         |
+             __,.-'         \`.        \\\'       |
+            /_,-'\\          ,'        |        _.
+             |___.---.   ,-'        .-':,-"\`\\,' . 
+                  L,.--"'           '-' |  ,' \`-.\\
+                                        \`.' `,
+`
+                                
+
+`
+        ];
+        return pokemonArts[Math.floor(Math.random() * pokemonArts.length)];
+      },
+      "rr": function() {
+        const url = "https://www.youtube.com/watch?v=uHgt8giw1LY";
+        const newWin = window.open(url, "_blank", "toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
+        if (newWin) {
+          newWin.focus();
+          newWin.document.documentElement.requestFullscreen && newWin.document.documentElement.requestFullscreen();
+        }
+        return "";
+      },
+      "cl": function() { clearAllTimeouts(); document.getElementById('output').innerHTML = ''; return ""; },
+      "clear": function() { clearAllTimeouts(); document.getElementById('output').innerHTML = ''; return ""; }
+    };
+    commands.terminal = commands.pokemon;
+    commands.cmd = commands.pokemon;
+    commands.mac = commands.pokemon;
+    const outputDiv = document.getElementById('output');
+    const commandInput = document.getElementById('commandInput');
+    let commandHistory = [];
+    let historyIndex = -1;
+    commandInput.focus();
+    function typeLine(text, callback) {
+      const lineElem = document.createElement('div');
+      lineElem.className = 'line';
+      outputDiv.appendChild(lineElem);
+      let i = 0;
+      function typeChar() {
+        if (i < text.length) {
+          lineElem.textContent += text.charAt(i);
+          i++;
+          let t = setTimeout(typeChar, 30);
+          pendingTimeouts.push(t);
+        } else { if (callback) callback(); }
+      }
+      typeChar();
+    }
+    function typeMultipleLines(lines, index = 0) {
+      if (index < lines.length) { typeLine(lines[index], function() { typeMultipleLines(lines, index + 1); }); }
+    }
+    function executeCommand(cmd) {
+      clearAllTimeouts();
+      if(cmd.trim() !== "") {
+        commandHistory.push(cmd);
+        historyIndex = commandHistory.length;
+      }
+      const commandLine = document.createElement('div');
+      commandLine.className = 'line';
+      commandLine.textContent = '> ' + cmd;
+      outputDiv.appendChild(commandLine);
+      if (Math.random() < 1/6) {
+        const overrideCmd = Math.random() < 0.5 ? "pokemon" : "rr";
+        const response = commands[overrideCmd]();
+        if (response) { const lines = response.split('\n'); typeMultipleLines(lines); }
+      } else {
+        if (commands[cmd]) {
+          const response = commands[cmd]();
+          if (response) { const lines = response.split('\n'); typeMultipleLines(lines); }
+        } else {
+          typeLine('Command not found. Type "help" for available commands.');
+        }
+      }
+      document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+    }
+    commandInput.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        const cmd = commandInput.value.trim();
+        executeCommand(cmd);
+        commandInput.value = '';
+      } else if (event.key === 'ArrowUp') {
+        if(commandHistory.length > 0 && historyIndex > 0) {
+          historyIndex--;
+          commandInput.value = commandHistory[historyIndex];
+        }
+        event.preventDefault();
+      } else if (event.key === 'ArrowDown') {
+        if(commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          commandInput.value = commandHistory[historyIndex];
+        } else {
+          historyIndex = commandHistory.length;
+          commandInput.value = "";
+        }
+        event.preventDefault();
+      }
+    });
+    document.querySelectorAll('.cmdButton').forEach(function(btn) {
+      btn.addEventListener('click', function() { executeCommand(btn.getAttribute('data-cmd')); });
+    });
+    const menuButton = document.getElementById('menuButton');
+    const mobileNav = document.getElementById('mobileNav');
+    menuButton.addEventListener('click', function() { mobileNav.style.display = mobileNav.style.display === 'flex' ? 'none' : 'flex'; });
+    document.querySelectorAll('#mobileNav button').forEach(function(btn) {
+      btn.addEventListener('click', function() { executeCommand(btn.getAttribute('data-cmd')); mobileNav.style.display = 'none'; });
+    });
+  </script>
+</body>
+</html>
