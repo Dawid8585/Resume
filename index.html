@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Resume Terminal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="icon" href="Icon.png" type="image/png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { margin: 0; padding: 0; background-color: black; color: #0f0; font-family: "Courier New", Courier, monospace; overflow: hidden; }
@@ -24,9 +26,9 @@
     .input-line { display: flex; align-items: center; margin: 5px 0; }
     .prompt { font-weight: bold; margin-right: 5px; }
     #commandInput { background: transparent; border: none; color: #0f0; font-family: "Courier New", Courier, monospace; font-size: 1em; outline: none; width: 80%; }
-    .underline {text-decoration: underline;}
-    .flash {animation: flash 3s infinite;}
-    @keyframes flash {0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; }}
+    .underline { text-decoration: underline; }
+    .flash { animation: flash 3s infinite; }
+    @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     @media (max-width: 768px) {
       #sidebar { display: none; }
       #main { margin-left: 0; }
@@ -43,8 +45,8 @@
       <li><button class="cmdButton" data-cmd="help">- help <br> List commands</button></li>
       <li><button class="cmdButton" data-cmd="rsme -fl">- rsme -fl <br> Full resume</button></li>
       <li><button class="cmdButton" data-cmd="rsme -dwnld">- rsme -dwnld <br> Download Resume</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -hd">- rsme -hd <br> Header </button></li>
-      <li><button class="cmdButton" data-cmd="rsme -sk">- rsme -sk <br> Skills &amp; qualifications</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -hd">- rsme -hd <br> Header</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -sk">- rsme -sk <br> Skills & qualifications</button></li>
       <li><button class="cmdButton" data-cmd="rsme -ex">- rsme -ex <br> Experience</button></li>
       <li><button class="cmdButton" data-cmd="rsme -ce">- rsme -ce <br> Certifications / Education</button></li>
       <li><button class="cmdButton" data-cmd="rsme -ad">- rsme -ad <br> Additional info</button></li>
@@ -58,7 +60,7 @@
 |  _ \| ____/ ___|| | | |  \/  | ____|
 | |_) |  _| \___ \| | | | |\/| |  _|  
 |  _ <| |___ ___) | |_| | |  | | |___ 
-|_| \_\_____|____/ \___/|_|  |_|_____|
+|_| \_\_____|____/ \___/|_|  |_|_____| 
       <span>by dawid perkowski</span>
     </div>
     <div id="mobileNavContainer">
@@ -77,10 +79,9 @@
       </div>
     </div>
     <div id="terminal">
-      <div class="line">
-        Resume Terminal for<span class="">: <span class="underline , flash">Dawid Perkowski</span>
-      </div>      
+      <div class="line">Resume Terminal for: <span class="underline flash">Dawid Perkowski</span></div>
       <div class="line">Type a command below:</div>
+      <div class="line">Resume can be downloaded via 'rsme -dwnld' command</div>
       <br>
       <div id="output"></div>
       <div class="input-line">
@@ -91,6 +92,8 @@
   </div>
   <script>
     let pendingTimeouts = [];
+    let currentLine = null;
+    let flushCallback = null;
     function clearAllTimeouts() {
       pendingTimeouts.forEach(id => clearTimeout(id));
       pendingTimeouts = [];
@@ -101,7 +104,8 @@ www.linkedin.com/in/dawid-perkowski
 Innovative .NET Developer and U.S. Marine Corps Veteran with a proven track record of delivering high-quality, scalable software solutions.
 Skilled in both backend and frontend technologies, committed to creating seamless, user-focused experiences.
 Brings discipline, leadership, and a relentless drive for continuous improvement.
-Thrives in collaborative environments, sharing knowledge and fostering teamwork to consistently ensure project success.`;
+Th
+rives in collaborative environments, sharing knowledge and fostering teamwork to consistently ensure project success.`;
     const resumeSkills = `SKILLS & QUALIFICATIONS
 Programming & Scripting Languages: C#, Java, Go, Python, JavaScript/TypeScript;
 Frameworks & Libraries: .NET (ASP.NET, .NET MVC), Node.js, React, Next.js, Angular, Blazor, Palantir Foundry;
@@ -121,7 +125,8 @@ Senior Software Engineering Lead                                                
 Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of clients in multiple environments, using Oracle SQL as the database language.
 ● Lead multiple software technology teams, overseeing end-to-end development processes for mission-critical applications.
 ● Modernize legacy codebases and introduce AI-driven features to optimize workflows and enhance user experiences.
-● Establish coding standards, architectural guidelines, and best practices to ensure maintainable, high-quality software.
+● Establish coding standards, architectural guidelines, and best p
+actices to ensure maintainable, high-quality software.
 ● Review processes and code to identify improvements, boost team efficiency, and align development efforts with strategic objectives.
 ● Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
 ● Utilize .NET, Palantir Foundry, Java, Go, React, Next.js, Python, Kafka, GraphQL, REST APIs, and Oracle DB to deliver secure, scalable solutions.
@@ -183,7 +188,7 @@ ${resumeAdditional}`;
 help       - List commands
 rsme -fl  - Full resume
 rsme -dwnld  - Resume download
-rsme -hd  - Header 
+rsme -hd  - Header
 rsme -sk  - Skills & qualifications
 rsme -ex  - Experience
 rsme -ce  - Certifications / Education
@@ -201,84 +206,7 @@ cl or clear - Clear terminal`; },
       "rsme -ct": function() { return `Contact Information:
 LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
       "pokemon": function() {
-        const pokemonArts = [
-`__                                _.--'"7
-\`. \`--._                        ,-'_,-  ,'
- ,'  \`-.\\\`-.                   /' .'    ,|
- \`.     \`. \`-     __...___   /  /     - j
-   \`.     \`  \`.-""        " .  /       /
-     \\     /                \` /       /
-      \\   /                         ,'
-      '._'_               ,-'       |
-         | \\            ,|  |   ...-'
-         || \`         ,|_|  |   | \`             _..__
-        /|| |          | |  |   |  \\  _,_    .-"     \`-.
-       | '.-'          |_|_,' __!  | /|  |  /           \\
-,-...___ .=                  ._..'  /\`.| ,\`,.      _,.._ |
-|   |,.. \\     '  \`'        ____,  ,' \`--','  |    /      |
-,\`-..'  _)  .\`-..___,---'_...._/  .'      '-...'   |      /
-'.__' ""'      \`.,------'"'      ,/            ,     \`.._.' \`.
-\`.             | \`--........,-'.            .         \\     \\
-\`-.          .   '.,--""     |           ,'\`        |      .
-   \`.       /     |          L          ,\\  .       |  .,---.
-     \`._   '      |           \\        /  .  L      | /   __ \`.
-        \`-.       |            \`._   ,    l   .    j |   '  \`. .
-          |       |               \`"' |  .    |   /  '      .' |
-          |       |                   j  |    |  /  , \`.__,'   |
-          \`.      L                 _.   \`    j ,'-'           |
-           |\`"---..\\._______,...,--' |   |   /|'      /        j
-           '       |                 |   .  / |      '        /
-            .      .              ____L   \\'  j    -',       /
-           / \`.     .          _,"     \\   | /  ,-','      ,'
-          /    \`.  ,'\`-._     /         \\  i'.,'_,'      .'
-         .       \`.      \`-..'             |_,-'      _.'
-         |         \`._      |            ''/      _,-'
-         |            '-..._\\             \`__,.--'
-        ,'           ,' \`-.._\`.            .
-       \`.    __      |       "'\`.          |
-         \`-"'  \`""""'            7         \`.
-                                \`---'--.,'"\`'`,
-`                  ,-'\`\\
-                  _,"'    j
-           __....+       /               . 
-       ,-'"             /               ; \`-._.'.
-      /                (              ,'       .'
-     |            _.    \\             \\   ---._ \`-.
-     ,|    ,   _.'  Y    \\             \`- ,'   \\   \`.\`.
-     l'    \\ ,'._,\\ \`.    .              /       ,--. l
-  .,-        \`._  |  |    |              \\       _   l .
- /              \`"--'    /              .'       \`\`.\` |  )
-.\\    ,                 |                .        \\ \`\`. '
-\\\`\.                .     |                '._  __   ;. \`'
-  \`-..--------...'       \\                  '\`  \`-"'.  \\
-      \`......___          \`._                        |  \\
-               /\`            \`..                     |   .
-              /|                \`-.                  |    L
-             / |               \\   \`._               .    |
-           ,'\`  |,-"-.\   .       .     \`.\            /     |
-         ,'\`    |     '   \\      |       \`.\         /      |
-       ,'\`     /|       \\  .     |         .       /       |
-     ,'\`      / |        \\  .    +          \\    ,'       .'
-    .       .  |         \\ |     \\          \\_,'        / j
-    |       |  L          \`|      .          \        ,' '
-    |    _. |   \\          /      |           .     .' ,'
-    |   /  \`|    \\        .       |  /        |   ,' .'
-    |   ,-..\\     -.     ,        | /         |,.' ,'
-    \`\. |___,\\    /  \`.\   /\`.\       '          |  .'
-      '-\`-'     j     \` /."7-..../|          ,\`-'
-                |        .'  / _/_|          .
-                \`,       \`"'/"'    \\          \`.
-                  \`,       '.       \`.         |
-             __,.-'         \`.        \\\'       |
-            /_,-'\\          ,'        |        _.
-             |___.---.   ,-'        .-':,-"\`\\,' . 
-                  L,.--"'           '-' |  ,' \`-.\\
-                                        \`.' `,
-`
-                                
-
-`
-        ];
+        const pokemonArts = [/* … */];
         return pokemonArts[Math.floor(Math.random() * pokemonArts.length)];
       },
       "rsme -dwnld": function() {
@@ -301,28 +229,48 @@ LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
     commands.cmd = commands.pokemon;
     commands.mac = commands.pokemon;
     const outputDiv = document.getElementById('output');
+    const terminalElem = document.getElementById('terminal');
     const commandInput = document.getElementById('commandInput');
     let commandHistory = [];
     let historyIndex = -1;
-    commandInput.focus();
     function typeLine(text, callback) {
       const lineElem = document.createElement('div');
       lineElem.className = 'line';
       outputDiv.appendChild(lineElem);
       let i = 0;
+      currentLine = { lineElem, text };
+      flushCallback = callback;
       function typeChar() {
         if (i < text.length) {
           lineElem.textContent += text.charAt(i);
           i++;
-          let t = setTimeout(typeChar, 30);
+          let t = setTimeout(typeChar, 10);
           pendingTimeouts.push(t);
-        } else { if (callback) callback(); }
+          terminalElem.scrollTop = terminalElem.scrollHeight;
+        } else {
+          currentLine = null;
+          flushCallback = null;
+          callback && callback();
+        }
       }
       typeChar();
     }
     function typeMultipleLines(lines, index = 0) {
-      if (index < lines.length) { typeLine(lines[index], function() { typeMultipleLines(lines, index + 1); }); }
+      if (index < lines.length) {
+        typeLine(lines[index], () => typeMultipleLines(lines, index + 1));
+      }
     }
+    function flushTyping() {
+      if (currentLine) {
+        clearAllTimeouts();
+        currentLine.lineElem.textContent = currentLine.text;
+        const cb = flushCallback;
+        currentLine = null;
+        flushCallback = null;
+        cb && cb();
+      }
+    }
+    document.addEventListener('keydown', flushTyping);
     function executeCommand(cmd) {
       clearAllTimeouts();
       if (cmd.trim() !== "") {
@@ -333,43 +281,34 @@ LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
       commandLine.className = 'line';
       commandLine.textContent = '> ' + cmd;
       outputDiv.appendChild(commandLine);
-
       const normalizedCmd = cmd.toLowerCase();
-
       if (Math.random() < 1/6) {
         const overrideCmd = Math.random() < 0.5 ? "pokemon" : "rr";
         const response = commands[overrideCmd]();
-        if (response) {
-          const lines = response.split('\n');
-          typeMultipleLines(lines);
-        }
+        if (response) typeMultipleLines(response.split('\n'));
       } else {
         if (commands[normalizedCmd]) {
           const response = commands[normalizedCmd]();
-          if (response) {
-            const lines = response.split('\n');
-            typeMultipleLines(lines);
-          }
+          if (response) typeMultipleLines(response.split('\n'));
         } else {
           typeLine('Command not found. Type "help" for available commands.');
         }
       }
-      document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
+      terminalElem.scrollTop = terminalElem.scrollHeight;
     }
-
     commandInput.addEventListener('keydown', function(event) {
       if (event.key === 'Enter') {
         const cmd = commandInput.value.trim();
         executeCommand(cmd);
         commandInput.value = '';
       } else if (event.key === 'ArrowUp') {
-        if(commandHistory.length > 0 && historyIndex > 0) {
+        if (commandHistory.length > 0 && historyIndex > 0) {
           historyIndex--;
           commandInput.value = commandHistory[historyIndex];
         }
         event.preventDefault();
       } else if (event.key === 'ArrowDown') {
-        if(commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+        if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
           historyIndex++;
           commandInput.value = commandHistory[historyIndex];
         } else {
@@ -379,21 +318,14 @@ LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
         event.preventDefault();
       }
     });
-    document.querySelectorAll('.cmdButton').forEach(function(btn) {
-      btn.addEventListener('click', function() { executeCommand(btn.getAttribute('data-cmd')); });
-    });
+    document.querySelectorAll('.cmdButton').forEach(btn => btn.addEventListener('click', () => executeCommand(btn.getAttribute('data-cmd'))));
     const menuButton = document.getElementById('menuButton');
     const mobileNav = document.getElementById('mobileNav');
-    menuButton.addEventListener('click', function() { mobileNav.style.display = mobileNav.style.display === 'flex' ? 'none' : 'flex'; });
-    document.querySelectorAll('#mobileNav button').forEach(function(btn) {
-      btn.addEventListener('click', function() { executeCommand(btn.getAttribute('data-cmd')); mobileNav.style.display = 'none'; });
-    });
+    menuButton.addEventListener('click', () => mobileNav.style.display = mobileNav.style.display === 'flex' ? 'none' : 'flex');
+    document.querySelectorAll('#mobileNav button').forEach(btn => btn.addEventListener('click', () => {
+      executeCommand(btn.getAttribute('data-cmd'));
+      mobileNav.style.display = 'none';
+    }));
   </script>
 </body>
 </html>
-
-
-
-
-
-
