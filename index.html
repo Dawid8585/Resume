@@ -3,30 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <title>Resume Terminal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="icon" href="Icon.png" type="image/png">  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-113F5NHQFG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-113F5NHQFG');
+  </script>
+
   <style>
     body { margin: 0; padding: 0; background-color: black; color: #0f0; font-family: "Courier New", Courier, monospace; overflow: hidden; }
+    
+    /* Boot screen styles */
+    #bootScreen { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: black; 
+      color: #0f0; 
+      z-index: 10000; 
+      display: flex; 
+      flex-direction: column; 
+      justify-content: flex-start; 
+      padding: 20px; 
+      box-sizing: border-box;
+      font-size: 0.9em;
+      line-height: 1.2;
+    }
+    
+    .boot-line { 
+      margin: 2px 0; 
+      font-family: "Courier New", Courier, monospace; 
+    }
+    
+    .boot-cursor::after { 
+      content: '_'; 
+      animation: blink-cursor 1s infinite; 
+    }
+    
+    .boot-ok { color: #0f0; }
+    .boot-loading { color: #ffff00; }
+    .boot-system { color: #00ffff; }
+    .boot-memory { color: #ff6600; }
+    .boot-complete { color: #ffffff; font-weight: bold; }
+    
+    @keyframes blink-cursor { 
+      0%, 50% { opacity: 1; } 
+      51%, 100% { opacity: 0; } 
+    }
+      @keyframes scanline {
+      0% { transform: translateY(-100vh); }
+      100% { transform: translateY(100vh); }
+    }
+    
+    .scanline {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #0f0, transparent);
+      animation: scanline 3s linear infinite;
+      opacity: 0.3;
+    }
+    
+    #bootScreen.fade-out {
+      opacity: 0;
+      transition: opacity 1s ease-out;
+    }
+    
+    .boot-header { 
+      color: #0f0; 
+      font-weight: bold; 
+      text-shadow: 0 0 10px #0f0; 
+      margin-bottom: 10px; 
+    }
+    
+    .boot-warning { color: #ff0; }
+    
     #sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background-color: black; border-right: 1px solid #0f0; padding: 20px; box-sizing: border-box; }
     #sidebar h2 { margin-top: 0; font-size: 1.4em; text-align: center; border-bottom: 1px solid #0f0; padding-bottom: 10px; }
     #sidebar ul { list-style: none; padding: 0; margin: 20px 0 0 0; line-height: 1.6em; }
     #sidebar li { margin-bottom: 8px; }
     .cmdButton { background: none; border: none; color: #0f0; font-family: inherit; font-size: 1em; text-align: left; width: 100%; cursor: pointer; padding: 0; }
-    #main { margin-left: 240px; height: 100vh; display: flex; flex-direction: column; }
+    #main { margin-left: 240px; height: 100vh; display: flex; flex-direction: column; opacity: 0; transition: opacity 1s ease-in; }
+    #main.show { opacity: 1; }
     #header { text-align: center; padding: 20px; white-space: pre; }
     #header span { font-size: 0.7em; display: block; margin-top: 10px; }
     #mobileNavContainer { display: none; padding: 10px; background: black; border-bottom: 1px solid #0f0; }
     #menuButton { background: transparent; border: 1px solid #0f0; color: #0f0; padding: 10px; width: 100%; font-size: 1em; }
     #mobileNav { display: none; flex-wrap: wrap; justify-content: center; background: black; padding: 10px 0; }
     #mobileNav button { background: transparent; border: 1px solid #0f0; color: #0f0; margin: 5px; padding: 5px 10px; font-size: 0.9em; cursor: pointer; }
-    #terminal { flex-grow: 1; padding: 20px; box-sizing: border-box; overflow-y: scroll; -ms-overflow-style: none; scrollbar-width: none; }
+    #terminal { flex-grow: 1; padding: 20px; box-sizing: border-box; overflow-y: scroll; -ms-overflow-style: none; scrollbar-width: none; position: relative; }
     #terminal::-webkit-scrollbar { display: none; }
     .line { margin: 5px 0; white-space: pre-wrap; }
-    .input-line { display: flex; align-items: center; margin: 5px 0; }
+    .input-line { display: flex; align-items: center; margin: 5px 0; position: relative; }
     .prompt { font-weight: bold; margin-right: 5px; }
     #commandInput { background: transparent; border: none; color: #0f0; font-family: "Courier New", Courier, monospace; font-size: 1em; outline: none; width: 80%; }
-    .underline {text-decoration: underline;}
-    .flash {animation: flash 3s infinite;}
-    @keyframes flash {0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; }}
+    .underline { text-decoration: underline; }
+    .flash { animation: flash 3s infinite; }
+    
+    /* Color coding for different content types */
+    .company-name { color: #00ff00; font-weight: bold; }
+    .job-title { color: #ffff00; }
+    .date { color: #ff6600; }
+    .skill { color: #00ffff; }
+    .location { color: #ff00ff; }
+    .achievement { color: #ffffff; }
+    .section-header { color: #00ff00; font-weight: bold; text-decoration: underline; }
+    
+    /* Auto-complete suggestions */
+    #suggestions { 
+      position: absolute; 
+      top: 100%; 
+      left: 0; 
+      right: 0; 
+      background: rgba(0, 20, 0, 0.95); 
+      border: 1px solid #0f0; 
+      border-top: none; 
+      max-height: 150px; 
+      overflow-y: auto; 
+      z-index: 1000; 
+      display: none; 
+    }
+    .suggestion { 
+      padding: 5px 10px; 
+      cursor: pointer; 
+      color: #0f0; 
+    }
+    .suggestion:hover, .suggestion.selected { 
+      background: rgba(0, 255, 0, 0.2); 
+    }
+    
+    /* Loading indicator */
+    .loading { 
+      color: #ffff00; 
+      animation: pulse 1s infinite; 
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    /* Error messages */
+    .error { color: #ff0000; }
+    .success { color: #00ff00; }
+    .warning { color: #ffff00; }
+    
+    /* QR Code container */
+    #qrContainer { 
+      display: flex; 
+      justify-content: center; 
+      margin: 10px 0; 
+    }
+    
+    @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     @media (max-width: 768px) {
       #sidebar { display: none; }
       #main { margin-left: 0; }
@@ -37,18 +172,27 @@
   </style>
 </head>
 <body>
+  <!-- Boot Screen -->
+  <div id="bootScreen">
+    <div class="scanline"></div>
+    <div id="bootContent"></div>
+  </div>
+  
   <div id="sidebar">
     <h2>Commands</h2>
     <ul>
       <li><button class="cmdButton" data-cmd="help">- help <br> List commands</button></li>
       <li><button class="cmdButton" data-cmd="rsme -fl">- rsme -fl <br> Full resume</button></li>
       <li><button class="cmdButton" data-cmd="rsme -dwnld">- rsme -dwnld <br> Download Resume</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -hd">- rsme -hd <br> Header </button></li>
-      <li><button class="cmdButton" data-cmd="rsme -sk">- rsme -sk <br> Skills &amp; qualifications</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -hd">- rsme -hd <br> Header</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -sk">- rsme -sk <br> Skills & qualifications</button></li>
       <li><button class="cmdButton" data-cmd="rsme -ex">- rsme -ex <br> Experience</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ce">- rsme -ce <br> Certifications / Education</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ad">- rsme -ad <br> Additional info</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ct">- rsme -ct <br> Contact info</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ce">- rsme -ce <br> Certifications</button></li>
+      <li><button class="cmdButton" data-cmd="rsme -ad">- rsme -ad <br> Additional info</button></li>      <li><button class="cmdButton" data-cmd="rsme -ct">- rsme -ct <br> Contact info</button></li>
+      <li><button class="cmdButton" data-cmd="search">- search <br> Search resume</button></li>
+      <li><button class="cmdButton" data-cmd="qr">- qr <br> Generate QR code</button></li>
+      <li><button class="cmdButton" data-cmd="export">- export <br> Export resume</button></li>
+      <li><button class="cmdButton" data-cmd="man">- man <br> Manual pages</button></li>
       <li><button class="cmdButton" data-cmd="cl">- cl <br> Clear terminal</button></li>
     </ul>
   </div>
@@ -58,7 +202,7 @@
 |  _ \| ____/ ___|| | | |  \/  | ____|
 | |_) |  _| \___ \| | | | |\/| |  _|  
 |  _ <| |___ ___) | |_| | |  | | |___ 
-|_| \_\_____|____/ \___/|_|  |_|_____|
+|_| \_\_____|____/ \___/|_|  |_|_____| 
       <span>by dawid perkowski</span>
     </div>
     <div id="mobileNavContainer">
@@ -70,330 +214,814 @@
         <button data-cmd="rsme -sk">rsme -sk</button>
         <button data-cmd="rsme -ex">rsme -ex</button>
         <button data-cmd="rsme -ce">rsme -ce</button>
-        <button data-cmd="rsme -ad">rsme -ad</button>
-        <button data-cmd="rsme -dwnld">rsme -dwnld</button>
+        <button data-cmd="rsme -ad">rsme -ad</button>        <button data-cmd="rsme -dwnld">rsme -dwnld</button>
         <button data-cmd="rsme -ct">rsme -ct</button>
+        <button data-cmd="search">search</button>
+        <button data-cmd="qr">qr</button>
+        <button data-cmd="export">export</button>
+        <button data-cmd="man">man</button>
         <button data-cmd="cl">cl</button>
       </div>
     </div>
     <div id="terminal">
-      <div class="line">
-        Resume Terminal for<span class="">: <span class="underline , flash">Dawid Perkowski</span>
-      </div>      
+      <div class="line">Resume Terminal for: <span class="underline flash">Dawid Perkowski</span></div>
       <div class="line">Type a command below:</div>
+      <div class="line">Resume can be downloaded via 'rsme -dwnld' command</div>
       <br>
-      <div id="output"></div>
-      <div class="input-line">
+      <div id="output"></div>      <div class="input-line">
         <span class="prompt">&gt;</span>
-        <input type="text" id="commandInput" autofocus>
+        <input type="text" id="commandInput" autofocus aria-label="Terminal command input" placeholder="Type a command...">
+        <div id="suggestions" role="listbox" aria-label="Command suggestions"></div>
       </div>
     </div>
-  </div>
-  <script>
+  </div>  <script>
+    // Boot sequence variables
+    let bootIndex = 0;
+    let bootComplete = false;
+    
+    // Boot sequence messages
+    const bootMessages = [
+      { text: "SYSTEM BOOT SEQUENCE INITIATED", type: "boot-header", delay: 100 },
+      { text: "█████████████████████████████████", type: "boot-system", delay: 50 },
+      { text: "RESUME TERMINAL OS v2.0", type: "boot-system", delay: 100 },
+      { text: "Copyright (c) 2024 Dawid Perkowski", type: "boot-system", delay: 100 },
+      { text: "█████████████████████████████████", type: "boot-system", delay: 50 },
+      { text: "", type: "", delay: 200 },
+      { text: "Initializing system components...", type: "boot-loading", delay: 300 },
+      { text: "Loading BIOS.................[OK]", type: "boot-ok", delay: 400 },
+      { text: "Checking memory integrity....[OK]", type: "boot-ok", delay: 300 },
+      { text: "Loading device drivers.......[OK]", type: "boot-ok", delay: 400 },
+      { text: "", type: "", delay: 300 },
+      { text: ">>> ACCESSING MAINFRAME DATABASE <<<", type: "boot-warning", delay: 500 },
+      { text: "Authentication required...", type: "boot-loading", delay: 800 },
+      { text: "Bypassing security protocols...", type: "boot-warning", delay: 1000 },
+      { text: "Access granted. Welcome, user.", type: "boot-ok", delay: 500 },
+      { text: "", type: "", delay: 300 },
+      { text: "Loading resume database.......", type: "boot-ok", delay: 400 },
+      { text: "", type: "", delay: 500 },
+      { text: "BOOT SEQUENCE COMPLETE", type: "boot-complete", delay: 800 },
+      { text: "Starting Resume Terminal...", type: "boot-complete", delay: 1000 }
+    ];
+    
+    function typeBootMessage(message, callback) {
+      const bootContent = document.getElementById('bootContent');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `boot-line ${message.type}`;
+      
+      if (message.text === "") {
+        messageDiv.innerHTML = "&nbsp;";
+        bootContent.appendChild(messageDiv);
+        setTimeout(callback, message.delay);
+        return;
+      }
+      
+      bootContent.appendChild(messageDiv);
+      
+      let charIndex = 0;
+      function typeChar() {
+        if (charIndex < message.text.length) {
+          messageDiv.textContent = message.text.substring(0, charIndex + 1) + (charIndex < message.text.length - 1 ? '_' : '');
+          charIndex++;
+          setTimeout(typeChar, 30);
+        } else {
+          messageDiv.textContent = message.text;
+          setTimeout(callback, message.delay);
+        }
+      }
+      
+      typeChar();
+    }
+    
+    function runBootSequence() {
+      if (bootIndex < bootMessages.length) {
+        typeBootMessage(bootMessages[bootIndex], () => {
+          bootIndex++;
+          runBootSequence();
+        });
+      } else {
+        // Boot sequence complete, fade out boot screen
+        setTimeout(() => {
+          const bootScreen = document.getElementById('bootScreen');
+          const mainScreen = document.getElementById('main');
+          
+          bootScreen.classList.add('fade-out');
+          
+          setTimeout(() => {
+            bootScreen.style.display = 'none';
+            mainScreen.classList.add('show');
+            bootComplete = true;
+            
+            // Initialize the main terminal after boot
+            initializeTerminal();
+          }, 1000);
+        }, 500);
+      }
+    }
+    
+    function initializeTerminal() {
+      // Auto-focus on terminal input
+      document.getElementById('commandInput').focus();
+      
+
+    }
+    
     let pendingTimeouts = [];
+    let currentLine = null;
+    let flushCallback = null;
+    let colorMode = true;
+    let selectedSuggestion = -1;
+    let isLoading = false;
+    
     function clearAllTimeouts() {
       pendingTimeouts.forEach(id => clearTimeout(id));
       pendingTimeouts = [];
     }
-    const resumeHeader = `Dawid Perkowski
+    
+    // Enhanced command suggestions and auto-complete
+    const allCommands = [
+      'help', 'rsme -fl', 'rsme -dwnld', 'rsme -hd', 'rsme -sk', 'rsme -ex', 
+      'rsme -ce', 'rsme -ad', 'rsme -ct', 'search', 'qr', 'export', 'man', 
+      'compare', 'cl', 'clear', 'pokemon', 'terminal', 'cmd', 'mac', 'rr'
+    ];
+    
+    function showSuggestions(input) {
+      const suggestions = document.getElementById('suggestions');
+      const value = input.toLowerCase();
+      
+      if (!value) {
+        suggestions.style.display = 'none';
+        return;
+      }
+      
+      const matches = allCommands.filter(cmd => cmd.toLowerCase().startsWith(value));
+      
+      if (matches.length === 0) {
+        suggestions.style.display = 'none';
+        return;
+      }
+      
+      suggestions.innerHTML = matches.map((cmd, index) => 
+        `<div class="suggestion" data-index="${index}" onclick="selectSuggestion('${cmd}')">${cmd}</div>`
+      ).join('');
+      
+      suggestions.style.display = 'block';
+      selectedSuggestion = -1;
+    }
+    
+    function selectSuggestion(command) {
+      document.getElementById('commandInput').value = command;
+      document.getElementById('suggestions').style.display = 'none';
+      selectedSuggestion = -1;
+    }
+    
+    function navigateSuggestions(direction) {
+      const suggestions = document.querySelectorAll('.suggestion');
+      if (suggestions.length === 0) return;
+      
+      if (selectedSuggestion >= 0) {
+        suggestions[selectedSuggestion].classList.remove('selected');
+      }
+      
+      selectedSuggestion += direction;
+      if (selectedSuggestion < 0) selectedSuggestion = suggestions.length - 1;
+      if (selectedSuggestion >= suggestions.length) selectedSuggestion = 0;
+      
+      suggestions[selectedSuggestion].classList.add('selected');
+      document.getElementById('commandInput').value = suggestions[selectedSuggestion].textContent;
+    }
+    
+    function showLoading(message = 'Processing...') {
+      isLoading = true;
+      const loadingLine = document.createElement('div');
+      loadingLine.className = 'line loading';
+      loadingLine.textContent = message;
+      document.getElementById('output').appendChild(loadingLine);
+      return loadingLine;
+    }
+    
+    function hideLoading(loadingElement) {
+      isLoading = false;
+      if (loadingElement && loadingElement.parentNode) {
+        loadingElement.parentNode.removeChild(loadingElement);
+      }
+    }
+    
+    function colorizeText(text) {
+      if (!colorMode) return text;
+      
+      return text
+        .replace(/(Dept of Health|WedWallet|ALPHA OMEGA INTEGRATION|UNITED STATES MARINE CORPS)/g, '<span class="company-name">$1</span>')
+        .replace(/(Senior Software Engineering Manager|Founding Engineer|\.NET Software Developer|Sergeant|Corporal)/g, '<span class="job-title">$1</span>')
+        .replace(/(\d{4}\s*–\s*\w+|\w+\s+\d{4}\s*–\s*\w+\s+\d{4}|\w+\.\s+\d{4}\s*–\s*\w+\.\s+\d{4})/g, '<span class="date">$1</span>')
+        .replace(/(Remote|San Francisco, CA|Washington, D\.C\.|Twentynine Palms, CA)/g, '<span class="location">$1</span>')
+        .replace(/(Java|C#|\.NET|Oracle|SQL|MySQL|Go|Python|JavaScript|TypeScript|React|Angular|AWS|Azure)/g, '<span class="skill">$1</span>')
+        .replace(/(SKILLS & QUALIFICATIONS|PROFESSIONAL EXPERIENCE|CERTIFICATIONS|ADDITIONAL INFORMATION)/g, '<span class="section-header">$1</span>')
+        .replace(/(reducing help desk tickets by 30%|troubleshooting time by over 50%|100% pass rate)/g, '<span class="achievement">$1</span>');
+    }    const resumeData = {
+      header: `Dawid Perkowski
 www.linkedin.com/in/dawid-perkowski
 
-Innovative .NET Developer and U.S. Marine Corps Veteran with a proven track record of delivering high-quality, scalable software solutions.
-Skilled in both backend and frontend technologies, committed to creating seamless, user-focused experiences.
-Brings discipline, leadership, and a relentless drive for continuous improvement.
-Thrives in collaborative environments, sharing knowledge and fostering teamwork to consistently ensure project success.`;
-    const resumeSkills = `SKILLS & QUALIFICATIONS
-Programming & Scripting Languages: C#, Java, Go, Python, JavaScript/TypeScript;
-Frameworks & Libraries: .NET (ASP.NET, .NET MVC), Node.js, React, Next.js, Angular, Blazor, Palantir Foundry;
-Web Services & APIs: GraphQL, RESTful APIs, SOAP;
-Frontend & UI: HTML/CSS, Bootstrap;
+Accomplished Engineering Manager and U.S. Marine Corps Veteran with a strong background in leading high performing software teams to deliver scalable, high quality solutions. Proven ability to mentor and guide the professional and technical development of engineers, fostering a culture of continuous improvement and collaboration. Experienced in partnering with product managers to define roadmaps, lead complex technical projects, and improve architectural design.`,
+      
+      skills: `SKILLS & QUALIFICATIONS
+
+Specialized Proficiencies: Java, C#, .NET Core, Oracle, SQL, MySQL
+Programming & Scripting: Go, Python, JavaScript/TypeScript
+Frameworks & Libraries: .NET (ASP.NET, .NET MVC), Spring Boot, Node.js, React, Next.js, Angular, Blazor, Palantir Foundry
+Databases: PostgreSQL, SQL Server, Appwrite, Supabase
+Cloud & DevOps: AWS, Azure (Cloud Services, DevOps), GitLab, Azure DevOps, Docker, Kafka, Dynatrace, SonarQube
 Languages: Native Bilingual (Polish and English).
+Web Services & APIs: GraphQL, RESTful APIs, SOAP
+Methodologies & Testing: Agile Scrum, TDD (nUnit, xUnit, Moq), Selenium, TestNG`,
 
-Cloud & DevOps: AWS, Azure (Cloud Services, DevOps), GitLab, Azure DevOps, Dynatrace, Guacamole, SonarQube, Docker, Kafka;
-Databases: Oracle, PostgreSQL, SQL Server, MySQL, Appwrite, Supabase;
-Version Control & CI/CD: Git (GitLab, GitHub), Flyway, Jira;
-AI & Automation: ChatGPT & AI tool integration;
-Methodologies & Testing: Agile Scrum, TDD (nUnit, xUnit, Moq);`;
-    const resumeExperience = `PROFESSIONAL EXPERIENCE
+      experience: `PROFESSIONAL EXPERIENCE
+Dept of Health (ACF/ORR)								                    Remote
+Senior Software Engineering Manager								September 2024 – Present
+Lead and mentor multiple software technology teams, guiding the professional and technical development of team members through tailored project assignments.
+Collaborate with product managers and key stakeholders to build a strategic roadmap, ensuring proper technical design and documentation for all features.
+Produce and review high quality, maintainable code, and establish coding standards and architectural guidelines to improve and scale application design.
+Build plans for prioritizing technical and resourcing challenges, enhancing team efficiency and aligning development with key business metrics.
+Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
+Utilize a modern tech stack including .NET, Palantir Foundry, Java, Go, React, Kafka, and Oracle DB to deliver secure, scalable solutions.
 
-Dept of Health (ACF/ORR)                                                                 Remote
-Senior Software Engineering Lead                                                         September 2024 – Present
-Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of clients in multiple environments, using Oracle SQL as the database language.
-● Lead multiple software technology teams, overseeing end-to-end development processes for mission-critical applications.
-● Modernize legacy codebases and introduce AI-driven features to optimize workflows and enhance user experiences.
-● Establish coding standards, architectural guidelines, and best practices to ensure maintainable, high-quality software.
-● Review processes and code to identify improvements, boost team efficiency, and align development efforts with strategic objectives.
-● Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
-● Utilize .NET, Palantir Foundry, Java, Go, React, Next.js, Python, Kafka, GraphQL, REST APIs, and Oracle DB to deliver secure, scalable solutions.
+WedWallet										San Francisco, CA		
+Founding Engineer										May 2024 – Present
+Spearhead the design and development of a fintech startup from the ground up, implementing modern .NET API standards.
+Architect and build core platform features using .NET Aspire, React, and other cloud-native services.
+Oversee continuous integration and deployment pipelines, ensuring rapid and reliable feature releases.
+Collaborate closely with stakeholders to refine product requirements, deliver proof-of-concepts, and guide product roadmap.
+Implement best practices around security, scalability, and fault tolerance to support the platform's growth trajectory.
 
-WedWallet                                                                                San Francisco, CA
-Founding Engineer                                                                        May 2024 – Present
-● Spearhead the design and development of a fintech startup from the ground up, implementing modern .NET API standards.
-● Architect and build core platform features using .NET Aspire, Appwrite, Supabase, and other cloud-native services.
-● Oversee continuous integration and deployment pipelines, ensuring rapid and reliable feature releases.
-● Collaborate closely with stakeholders to refine product requirements, deliver proof-of-concepts, and guide product roadmap.
-● Implement best practices around security, scalability, and fault tolerance to support the platform’s growth trajectory.
+ALPHA OMEGA INTEGRATION                                                                                                                                                                   Washington, D.C.
+.NET Software Developer 								 	Jan 2020 - 2024
+Designed and developed over 20 features for two critical Web Applications used by classified government agencies, utilizing .NET, C#, and Oracle SQL.
+Upgraded legacy systems, reducing help desk tickets by 30% and troubleshooting time by over 50%.
+Implemented modern front-end solutions with Angular, HTML, CSS, and Bootstrap, improving user interface and user experience.
+Led a team in transitioning from a legacy version control system to Git DevOps, completing the project in two months.
+Developed microservices and RESTful APIs, focusing on API security and performance optimization.
+Created unit and smoke tests for CI/CD pipelines, ensuring robust deployments.
+Participated in client meetings, providing technical input to enhance software quality and process efficiency.
+UNITED STATES MARINE CORPS						                                       Twentynine Palms, CA
+Sergeant; Quality Assurance Supervisor								Sept. 2018 – Dec. 2019
+Promoted to regulate and supervise over 20 military avionic technicians (ranging from private to corporal) that reported daily for quality verification. Primary supervisor for multiple collateral duties including inventory management and technical risk management. 
+Managed an inventory of $17 million worth of support equipment for repairing and troubleshooting military aircraft
+Supervised and quality inspected 400+ no-fail avionics gear for Bell-Boeing's most advanced aircraft
+Led preparations for large-scale scheduled and unscheduled inspections that resulted in a 100% pass rate
 
-ALPHA OMEGA INTEGRATION                                                                  Washington, D.C.
-.NET Software Developer                                                                  June 2020 – Present
-Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of classified clients in a .NET environment, using Oracle SQL as the database language.
-● Designed and developed over 20 features for two critical Web Applications used by classified government agencies, utilizing .NET, C#, and Oracle SQL.
-● Upgraded legacy systems, reducing help desk tickets by 30% and troubleshooting time by over 50%.
-● Implemented modern front-end solutions with Angular, HTML, CSS, and Bootstrap, improving user interface and user experience.
-● Led a team in transitioning from a legacy version control system to Git DevOps, completing the project in two months.
-● Developed microservices and RESTful APIs, focusing on API security and performance optimization.
-● Created unit and smoke tests for CI/CD pipelines, ensuring robust deployments.
-● Participated in client meetings, providing technical input to enhance software quality and process efficiency.
+Ensured strict compliance with aviation standards, policies and procedures while maintaining a high degree of efficiency
+Corporal; Project Manager									Mar. 2018 – Sept. 2018
+Various Ranks; Technical Supervisor, Avionics Engineer						Mar. 2015 – Mar. 2018`,
 
-UNITED STATES MARINE CORPS                                                               Jacksonville, NC / Twentynine Palms, CA
-Sergeant; Quality Assurance Supervisor                                                   Sept. 2018 – Dec. 2019
-● Managed an inventory of $17 million worth of support equipment for repairing and troubleshooting military aircraft.
-● Supervised and quality inspected 400+ no-fail avionics gear for Bell-Boeing’s most advanced aircraft.
-● Led preparations for large-scale scheduled and unscheduled inspections that resulted in a 100% pass rate.
-● Ensured strict compliance with aviation standards, policies and procedures while maintaining a high degree of efficiency.
+      certifications: `CERTIFICATIONS
 
-Corporal; Project Manager                                                                Mar. 2018 – Sept. 2018
-Various Ranks; Technical Supervisor, Avionics Engineer                                   Mar. 2015 – Mar. 2018`;
-    const resumeCertifications = `CERTIFICATIONS / EDUCATION
-Certifications:
-● Azure Fundamentals AZ-900
-● Azure AI Fundamentals AI-900
-● MTA: Software Development Fundamentals
-● MSSA Microsoft Software Systems Academy
+Azure Fundamentals AZ-900 
+Azure AI Fundamentals AI-900
+MTA: Software Development Fundamentals
+MSSA Microsoft Software Systems Academy`,
 
-Education:
-Microsoft - Software and Systems Academy (MSSA)`;
-    const resumeAdditional = `ADDITIONAL INFORMATION
-Volunteer work: Firefighter at Exeter Township Fire Station (June 2014 – March 2015); 
-Equestrian volunteer at Cloverleaf Equine Center Nonprofit, Equestrian Therapy for Disabled Children (June 2020 – Present).
-Interests: Film photography, rock climbing, camping, car technologies, soccer
+      additional: `ADDITIONAL INFORMATION
+Volunteer work: Firefighter, Exeter Township Fire Station (June 2014 – March 2015); Equestrian volunteer, Cloverleaf Equine Center Nonprofit, Equestrian Therapy for Disabled Children (June 2020 – Present). 
+Interests: Film photography, rock climbing, camping, car technologies, soccer`
+    };
+    
+    // Legacy variables for backward compatibility
+    const resumeHeader = resumeData.header;
+    const resumeSkills = resumeData.skills;
+    const resumeExperience = resumeData.experience;
+    const resumeCertifications = resumeData.certifications;
+    const resumeAdditional = resumeData.additional;    const resumeFull = `${resumeData.header}
 
-http://www.linkedin.com/in/dawid-perkowski`;
-    const resumeFull = `${resumeHeader}
+${resumeData.skills}
 
-${resumeSkills}
+${resumeData.experience}
 
-${resumeExperience}
+${resumeData.certifications}
 
-${resumeCertifications}
-
-${resumeAdditional}`;
-    const commands = {
+${resumeData.additional}`;
+    
+    // Generate QR Code function
+    function generateQR() {
+      const qrContainer = document.createElement('div');
+      qrContainer.id = 'qrContainer';
+      qrContainer.innerHTML = `
+        <div>
+          ┌─────────────────────────────────┐
+          │█▀▀▀▀▀█ █▀█ █ ▀▄▀ █▀▀▀▀▀█│
+          │█ ███ █ ▄▀█▀▄ █▄█ █ ███ █│
+          │█ ▀▀▀ █ █▄▀ █▀ ▄▀ █ ▀▀▀ █│
+          │▀▀▀▀▀▀▀ █▀█ ▀ █▀█ ▀▀▀▀▀▀▀│
+          │▀█▀ ██▀█▄ ▀▄██▄▀█▀██▀▄▀█ │
+          │ ▄██▄▀▀▄▀▀█▄▀▄█ ▄█▀██▀▄▀ │
+          │█ █▄█ █▄▀▄█▄▀▀▄██▄█▀▄▀▀█ │
+          │▀▀▀▀▀▀▀▀▀ █ ▄▀█▀▀▀█▀▀▀█▀│
+          │█▀▀▀▀▀█ ▀▄ █▄▀█ █ ▀ █▄██ │
+          │█ ███ █ █▀▄▀▄▄▄██▀▀▀█▀▄▀ │
+          │█ ▀▀▀ █ ▄▀█▀▀▄▀█▄▀██▄▀▄█ │
+          │▀▀▀▀▀▀▀ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀│
+          └─────────────────────────────────┘
+          
+          QR Code for: www.linkedin.com/in/dawid-perkowski
+          Scan to view LinkedIn profile on mobile
+        </div>
+      `;
+      return qrContainer.innerHTML;
+    }    const commands = {
       "help": function() { return `Available commands:
 help       - List commands
-rsme -fl  - Full resume
-rsme -dwnld  - Resume download
-rsme -hd  - Header 
-rsme -sk  - Skills & qualifications
-rsme -ex  - Experience
-rsme -ce  - Certifications / Education
-rsme -ad  - Additional info
-rsme -ct  - Contact info
+rsme -fl   - Full resume
+rsme -dwnld- Resume download  
+rsme -hd   - Header
+rsme -sk   - Skills & qualifications
+rsme -ex   - Experience
+rsme -ce   - Certifications
+rsme -ad   - Additional info
+rsme -ct   - Contact info
+search     - Search resume content
+qr         - Generate QR code for LinkedIn
+export     - Export resume in different formats
+man        - Manual pages for commands
+compare    - Show career progression metrics
 pokemon, terminal, cmd, mac - Random Pokémon art
 rr         - Redirect to YouTube in full screen
-cl or clear - Clear terminal`; },
-      "rsme -fl": function() { return resumeFull; },
-      "rsme -hd": function() { return resumeHeader; },
-      "rsme -sk": function() { return resumeSkills; },
-      "rsme -ex": function() { return resumeExperience; },
-      "rsme -ce": function() { return resumeCertifications; },
-      "rsme -ad": function() { return resumeAdditional; },
-      "rsme -ct": function() { return `Contact Information:
-LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
-      "pokemon": function() {
-        const pokemonArts = [
-`__                                _.--'"7
-\`. \`--._                        ,-'_,-  ,'
- ,'  \`-.\\\`-.                   /' .'    ,|
- \`.     \`. \`-     __...___   /  /     - j
-   \`.     \`  \`.-""        " .  /       /
-     \\     /                \` /       /
-      \\   /                         ,'
-      '._'_               ,-'       |
-         | \\            ,|  |   ...-'
-         || \`         ,|_|  |   | \`             _..__
-        /|| |          | |  |   |  \\  _,_    .-"     \`-.
-       | '.-'          |_|_,' __!  | /|  |  /           \\
-,-...___ .=                  ._..'  /\`.| ,\`,.      _,.._ |
-|   |,.. \\     '  \`'        ____,  ,' \`--','  |    /      |
-,\`-..'  _)  .\`-..___,---'_...._/  .'      '-...'   |      /
-'.__' ""'      \`.,------'"'      ,/            ,     \`.._.' \`.
-\`.             | \`--........,-'.            .         \\     \\
-\`-.          .   '.,--""     |           ,'\`        |      .
-   \`.       /     |          L          ,\\  .       |  .,---.
-     \`._   '      |           \\        /  .  L      | /   __ \`.
-        \`-.       |            \`._   ,    l   .    j |   '  \`. .
-          |       |               \`"' |  .    |   /  '      .' |
-          |       |                   j  |    |  /  , \`.__,'   |
-          \`.      L                 _.   \`    j ,'-'           |
-           |\`"---..\\._______,...,--' |   |   /|'      /        j
-           '       |                 |   .  / |      '        /
-            .      .              ____L   \\'  j    -',       /
-           / \`.     .          _,"     \\   | /  ,-','      ,'
-          /    \`.  ,'\`-._     /         \\  i'.,'_,'      .'
-         .       \`.      \`-..'             |_,-'      _.'
-         |         \`._      |            ''/      _,-'
-         |            '-..._\\             \`__,.--'
-        ,'           ,' \`-.._\`.            .
-       \`.    __      |       "'\`.          |
-         \`-"'  \`""""'            7         \`.
-                                \`---'--.,'"\`'`,
-`                  ,-'\`\\
-                  _,"'    j
-           __....+       /               . 
-       ,-'"             /               ; \`-._.'.
-      /                (              ,'       .'
-     |            _.    \\             \\   ---._ \`-.
-     ,|    ,   _.'  Y    \\             \`- ,'   \\   \`.\`.
-     l'    \\ ,'._,\\ \`.    .              /       ,--. l
-  .,-        \`._  |  |    |              \\       _   l .
- /              \`"--'    /              .'       \`\`.\` |  )
-.\\    ,                 |                .        \\ \`\`. '
-\\\`\.                .     |                '._  __   ;. \`'
-  \`-..--------...'       \\                  '\`  \`-"'.  \\
-      \`......___          \`._                        |  \\
-               /\`            \`..                     |   .
-              /|                \`-.                  |    L
-             / |               \\   \`._               .    |
-           ,'\`  |,-"-.\   .       .     \`.\            /     |
-         ,'\`    |     '   \\      |       \`.\         /      |
-       ,'\`     /|       \\  .     |         .       /       |
-     ,'\`      / |        \\  .    +          \\    ,'       .'
-    .       .  |         \\ |     \\          \\_,'        / j
-    |       |  L          \`|      .          \        ,' '
-    |    _. |   \\          /      |           .     .' ,'
-    |   /  \`|    \\        .       |  /        |   ,' .'
-    |   ,-..\\     -.     ,        | /         |,.' ,'
-    \`\. |___,\\    /  \`.\   /\`.\       '          |  .'
-      '-\`-'     j     \` /."7-..../|          ,\`-'
-                |        .'  / _/_|          .
-                \`,       \`"'/"'    \\          \`.
-                  \`,       '.       \`.         |
-             __,.-'         \`.        \\\'       |
-            /_,-'\\          ,'        |        _.
-             |___.---.   ,-'        .-':,-"\`\\,' . 
-                  L,.--"'           '-' |  ,' \`-.\\
-                                        \`.' `,
-`
-                                
+cl or clear- Clear terminal
 
-`
+Enhanced features:
+- Use Tab for auto-completion
+- Use Up/Down arrows for command history
+- Add --color flag to toggle colors
+- Type 'man <command>' for detailed help`; },
+
+      "rsme -fl": function(args) { 
+        const content = args && args.includes('--color') ? colorizeText(resumeFull) : resumeFull;
+        return content;
+      },
+      "rsme -hd": function(args) { 
+        const content = args && args.includes('--color') ? colorizeText(resumeData.header) : resumeData.header;
+        return content;
+      },
+      "rsme -sk": function(args) { 
+        const content = args && args.includes('--color') ? colorizeText(resumeData.skills) : resumeData.skills;
+        return content;
+      },
+      "rsme -ex": function(args) { 
+        const content = args && args.includes('--color') ? colorizeText(resumeData.experience) : resumeData.experience;
+        return content;
+      },
+      "rsme -ce": function(args) { 
+        const content = args && args.includes('--color') ? colorizeText(resumeData.certifications) : resumeData.certifications;
+        return content;
+      },
+      "rsme -ad": function(args) { 
+        const content = args && args.includes('--color') ? colorizeText(resumeData.additional) : resumeData.additional;
+        return content;
+      },
+      "rsme -ct": function() { 
+        return colorizeText(`Contact Information:
+LinkedIn: www.linkedin.com/in/dawid-perkowski
+Email: Available upon request
+Location: Remote / Washington D.C. Metro Area`); 
+      },
+      
+      "search": function(args) {
+        if (!args || args.trim() === '') {
+          return `<span class="error">Usage: search <term></span>
+Examples:
+  search java     - Find Java-related content
+  search manager  - Find management experience
+  search aws      - Find AWS-related skills`;
+        }
+        
+        const searchTerm = args.toLowerCase();
+        const results = [];
+        const fullText = resumeFull.toLowerCase();
+        
+        Object.entries(resumeData).forEach(([section, content]) => {
+          if (content.toLowerCase().includes(searchTerm)) {
+            const lines = content.split('\n');
+            lines.forEach((line, index) => {
+              if (line.toLowerCase().includes(searchTerm)) {
+                results.push(`[${section.toUpperCase()}] ${line.trim()}`);
+              }
+            });
+          }
+        });
+        
+        if (results.length === 0) {
+          return `<span class="warning">No results found for "${args}"</span>`;
+        }
+        
+        return `<span class="success">Found ${results.length} matches for "${args}":</span>\n\n` + 
+               results.map(result => colorizeText(result)).join('\n');
+      },
+      
+      "qr": function() {
+        return generateQR();
+      },
+      
+      "export": function(args) {
+        const format = args && args.trim() || 'txt';
+        
+        switch(format.toLowerCase()) {
+          case 'json':
+            return `<span class="success">Exporting to JSON format:</span>\n\n` + 
+                   JSON.stringify(resumeData, null, 2);
+          case 'xml':
+            return `<span class="success">Exporting to XML format:</span>\n\n` +
+                   `<?xml version="1.0" encoding="UTF-8"?>
+<resume>
+  <header>${resumeData.header.replace(/\n/g, '\\n')}</header>
+  <skills>${resumeData.skills.replace(/\n/g, '\\n')}</skills>
+  <experience>${resumeData.experience.replace(/\n/g, '\\n')}</experience>
+  <certifications>${resumeData.certifications.replace(/\n/g, '\\n')}</certifications>
+  <additional>${resumeData.additional.replace(/\n/g, '\\n')}</additional>
+</resume>`;
+          case 'txt':
+          default:
+            return `<span class="success">Exporting to Plain Text format:</span>\n\n` + resumeFull;
+        }
+      },
+      
+      "man": function(args) {
+        if (!args) {
+          return `Manual pages available for:
+${allCommands.join(', ')}
+
+Usage: man <command>
+Example: man search`;
+        }
+        
+        const manPages = {
+          'help': 'HELP(1) - Display available commands and usage information',
+          'rsme': 'RSME(1) - Resume display commands with various flags (-fl, -hd, -sk, -ex, -ce, -ad, -ct)',
+          'search': 'SEARCH(1) - Search through resume content\nUsage: search <term>\nSearches all sections for the specified term',
+          'qr': 'QR(1) - Generate QR code for LinkedIn profile\nDisplays ASCII QR code for easy mobile access',
+          'export': 'EXPORT(1) - Export resume in different formats\nUsage: export [json|xml|txt]\nSupported formats: JSON, XML, Plain Text',
+          'compare': 'COMPARE(1) - Show career progression and metrics\nDisplays before/after statistics and growth metrics',
+          'cl': 'CLEAR(1) - Clear terminal screen\nAliases: clear'
+        };
+        
+        const cmd = args.split(' ')[0].toLowerCase();
+        return manPages[cmd] || `<span class="error">No manual entry for ${args}</span>`;
+      },
+      
+      "compare": function() {
+        return colorizeText(`<span class="section-header">CAREER PROGRESSION METRICS</span>
+
+<span class="achievement">Leadership Growth:</span>
+2018: Individual contributor (Marine Corps technician)
+2020: Team lead (Git migration project leader)
+2024: Engineering Manager (Leading multiple teams)
+
+<span class="achievement">Technical Impact:</span>
+• Help desk tickets: <span class="achievement">Reduced by 30%</span>
+• Troubleshooting time: <span class="achievement">Reduced by 50%</span>
+• System reliability: <span class="achievement">100% inspection pass rate</span>
+• Team size managed: <span class="achievement">20+ technicians</span>
+
+<span class="achievement">Technology Evolution:</span>
+2018-2019: Military avionic systems, hardware focus
+2020-2024: .NET development, microservices, cloud migration
+2024-Present: Full-stack leadership, AI integration, fintech startup
+
+<span class="achievement">Key Transformations:</span>
+• From individual contributor → Engineering Manager
+• From hardware systems → Cloud-native solutions  
+• From government/defense → Healthcare + Fintech
+• From single project → Multiple team coordination`);
+      },      "pokemon": function() {
+        const pokemonArts = [
+          `                          .--.             .---.
+                      .---|__|            .-.     |~~~|
+                   .--|===|--|_           |_|     |~~~|--.
+                   |  |===|  |'\\     _,===/_\\\\    |   |  |
+                   |%%|   |  |.'\\    \\   |  ~~|   |   |  |
+                   |%%|   |  |\\.'\    \\  |   |   |   |  |
+                   |  |   |  | \\  \\    \\ |   |   |   |  |
+                   |  |   |__|  \\  \\    \\|___|   |   |__|
+                   |  |===|--|   \\  \\    |   |   |===|--|
+                   ^--^---'--^    \\  \\   ^---^   ^---'--^
+                      |  |  |      \\  \\  |  |  |      Pikachu`,
+          `                    ___-------___
+                         _-~~             ~~-_
+                      _-~                    /~-_
+             /^\\\\__/^\\\\         /~  \\\\                   /~  \\\\
+           /|  O|| O|        /      \\\\_______________/        \\\\
+          | |___||__|      /       /                \\\\          \\\\
+          |          \\\\    /      /                    \\\\          \\\\
+          |   (_______) /______/                        \\\\_________ \\\\
+          |         / /         \\\\                      /            \\\\
+           \\\\         \\\\^\\\\\\\\         \\\\                  /               \\\\     /
+             \\\\         ||           \\\\______________/      _-_       //\\\\__//
+               \\\\       ||------_-~~-_ ------------- \\\\ --/~   ~\\\\    || __/
+                 ~-----||====/~     |==================|       |/~~~~~
+                  (_(__/  ./     /                    \\\\_\\\\      \\\\.
+                         (_(___/                         \\\\_____)_)
+                         Charmander`
         ];
         return pokemonArts[Math.floor(Math.random() * pokemonArts.length)];
       },
+      
       "rsme -dwnld": function() {
+        try {
           window.open("Dawid_Perkowski_Resume.pdf", "_blank");
-          return "Opening resume in a new window...";
-        },
-      "rr": function() {
-        const url = "https://www.youtube.com/watch?v=uHgt8giw1LY";
-        const newWin = window.open(url, "_blank", "toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
-        if (newWin) {
-          newWin.focus();
-          newWin.document.documentElement.requestFullscreen && newWin.document.documentElement.requestFullscreen();
+          return "<span class='success'>Opening resume PDF in a new window...</span>";
+        } catch (error) {
+          return "<span class='error'>Error: Could not open PDF. Please check if the file exists.</span>";
         }
-        return "";
       },
-      "cl": function() { clearAllTimeouts(); document.getElementById('output').innerHTML = ''; return ""; },
-      "clear": function() { clearAllTimeouts(); document.getElementById('output').innerHTML = ''; return ""; }
-    };
+      
+      "rr": function() {
+        try {
+          const url = "https://www.youtube.com/watch?v=uHgt8giw1LY";
+          const newWin = window.open(url, "_blank", "toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
+          if (newWin) {
+            newWin.focus();
+            if (newWin.document.documentElement.requestFullscreen) {
+              newWin.document.documentElement.requestFullscreen();
+            }
+          }
+          return "<span class='success'>Opening Rick Roll... 🎵</span>";
+        } catch (error) {
+          return "<span class='error'>Error: Could not open external link.</span>";
+        }
+      },
+      
+      "cl": function() { 
+        clearAllTimeouts(); 
+        document.getElementById('output').innerHTML = ''; 
+        return ""; 
+      },
+      "clear": function() { 
+        clearAllTimeouts(); 
+        document.getElementById('output').innerHTML = ''; 
+        return ""; 
+      },
+      
+      "color": function(args) {
+        if (args === 'off') {
+          colorMode = false;
+          return "<span class='warning'>Color mode disabled</span>";
+        } else if (args === 'on') {
+          colorMode = true;
+          return "<span class='success'>Color mode enabled</span>";
+        } else {
+          colorMode = !colorMode;
+          return colorMode ? 
+            "<span class='success'>Color mode enabled</span>" : 
+            "<span class='warning'>Color mode disabled</span>";
+        }
+      }
+    };    // Command aliases
     commands.terminal = commands.pokemon;
     commands.cmd = commands.pokemon;
     commands.mac = commands.pokemon;
+    
     const outputDiv = document.getElementById('output');
+    const terminalElem = document.getElementById('terminal');
     const commandInput = document.getElementById('commandInput');
+    const suggestionsDiv = document.getElementById('suggestions');
     let commandHistory = [];
     let historyIndex = -1;
-    commandInput.focus();
+    
     function typeLine(text, callback) {
       const lineElem = document.createElement('div');
       lineElem.className = 'line';
+      lineElem.innerHTML = text; // Use innerHTML to support HTML tags for colors
       outputDiv.appendChild(lineElem);
-      let i = 0;
-      function typeChar() {
-        if (i < text.length) {
-          lineElem.textContent += text.charAt(i);
-          i++;
-          let t = setTimeout(typeChar, 30);
-          pendingTimeouts.push(t);
-        } else { if (callback) callback(); }
+      
+      if (colorMode) {
+        // Apply typing animation with colors
+        let i = 0;
+        const originalHTML = lineElem.innerHTML;
+        lineElem.innerHTML = '';
+        currentLine = { lineElem, text: originalHTML };
+        flushCallback = callback;
+        
+        function typeChar() {
+          if (i < originalHTML.length) {
+            lineElem.innerHTML = originalHTML.substring(0, i + 1);
+            i++;
+            let t = setTimeout(typeChar, 10);
+            pendingTimeouts.push(t);
+            terminalElem.scrollTop = terminalElem.scrollHeight;
+          } else {
+            currentLine = null;
+            flushCallback = null;
+            callback && callback();
+          }
+        }
+        typeChar();
+      } else {
+        // Instant display for non-color mode
+        terminalElem.scrollTop = terminalElem.scrollHeight;
+        if (callback) callback();
       }
-      typeChar();
     }
     function typeMultipleLines(lines, index = 0) {
-      if (index < lines.length) { typeLine(lines[index], function() { typeMultipleLines(lines, index + 1); }); }
+      if (index < lines.length) {
+        typeLine(lines[index], () => typeMultipleLines(lines, index + 1));
+      }
     }
-    function executeCommand(cmd) {
+    function flushTyping() {
+      if (currentLine) {
+        clearAllTimeouts();
+        currentLine.lineElem.textContent = currentLine.text;
+        const cb = flushCallback;
+        currentLine = null;
+        flushCallback = null;
+        cb && cb();
+      }
+    }
+    document.addEventListener('keydown', flushTyping);    function executeCommand(cmd) {
       clearAllTimeouts();
+      suggestionsDiv.style.display = 'none';
+      
       if (cmd.trim() !== "") {
         commandHistory.push(cmd);
         historyIndex = commandHistory.length;
       }
+      
       const commandLine = document.createElement('div');
       commandLine.className = 'line';
       commandLine.textContent = '> ' + cmd;
       outputDiv.appendChild(commandLine);
-
-      const normalizedCmd = cmd.toLowerCase();
-
-      if (Math.random() < 1/6) {
-        const overrideCmd = Math.random() < 0.5 ? "pokemon" : "rr";
-        const response = commands[overrideCmd]();
-        if (response) {
-          const lines = response.split('\n');
-          typeMultipleLines(lines);
-        }
-      } else {
-        if (commands[normalizedCmd]) {
-          const response = commands[normalizedCmd]();
-          if (response) {
-            const lines = response.split('\n');
-            typeMultipleLines(lines);
-          }
-        } else {
-          typeLine('Command not found. Type "help" for available commands.');
-        }
+      
+      // Parse command and arguments
+      const parts = cmd.trim().split(' ');
+      const baseCmd = parts[0].toLowerCase();
+      const args = parts.slice(1).join(' ');
+      const fullCmd = cmd.toLowerCase().trim();
+      
+      // Show loading for certain commands
+      let loadingElement = null;
+      if (['search', 'export', 'qr', 'compare'].includes(baseCmd)) {
+        loadingElement = showLoading(`Processing ${baseCmd}...`);
       }
-      document.getElementById('terminal').scrollTop = document.getElementById('terminal').scrollHeight;
-    }
-
+      
+      setTimeout(() => {
+        try {
+          if (loadingElement) hideLoading(loadingElement);
+          
+          // Easter egg with reduced probability
+          if (Math.random() < 1/8 && !['help', 'search', 'export', 'qr', 'man', 'compare'].includes(baseCmd)) {
+            const overrideCmd = Math.random() < 0.5 ? "pokemon" : "rr";
+            const response = commands[overrideCmd]();
+            if (response) typeMultipleLines(response.split('\\n'));
+            return;
+          }
+          
+          // Check for exact command matches first
+          if (commands[fullCmd]) {
+            const response = commands[fullCmd](args);
+            if (response) typeMultipleLines(response.split('\\n'));
+          }
+          // Check for base command matches
+          else if (commands[baseCmd]) {
+            const response = commands[baseCmd](args);
+            if (response) typeMultipleLines(response.split('\\n'));
+          }
+          // Handle commands with arguments (like rsme -fl --color)
+          else if (baseCmd === 'rsme' && parts[1]) {
+            const subCmd = `${baseCmd} ${parts[1]}`;
+            if (commands[subCmd]) {
+              const response = commands[subCmd](args);
+              if (response) typeMultipleLines(response.split('\\n'));
+            } else {
+              typeLine(`<span class="error">Unknown rsme option: ${parts[1]}</span>`);
+            }
+          }
+          else {
+            // Suggest similar commands
+            const suggestions = allCommands.filter(c => 
+              c.includes(baseCmd) || baseCmd.includes(c)
+            );
+            
+            let errorMsg = `<span class="error">Command not found: ${cmd}</span>`;
+            if (suggestions.length > 0) {
+              errorMsg += `\\n<span class="warning">Did you mean: ${suggestions.slice(0,3).join(', ')}?</span>`;
+            }
+            errorMsg += `\\n<span class="warning">Type "help" for available commands.</span>`;
+            
+            typeLine(errorMsg);
+          }
+        } catch (error) {
+          if (loadingElement) hideLoading(loadingElement);
+          typeLine(`<span class="error">Error executing command: ${error.message}</span>`);
+        }
+        
+        terminalElem.scrollTop = terminalElem.scrollHeight;
+      }, loadingElement ? 500 : 0); // Add delay only for loading commands
+    }    // Enhanced keyboard event handling
+    commandInput.addEventListener('input', function(event) {
+      showSuggestions(event.target.value);
+    });
+    
     commandInput.addEventListener('keydown', function(event) {
+      const suggestions = document.querySelectorAll('.suggestion');
+      
       if (event.key === 'Enter') {
+        if (selectedSuggestion >= 0 && suggestions.length > 0) {
+          // Use selected suggestion
+          commandInput.value = suggestions[selectedSuggestion].textContent;
+          suggestionsDiv.style.display = 'none';
+          selectedSuggestion = -1;
+        }
         const cmd = commandInput.value.trim();
         executeCommand(cmd);
         commandInput.value = '';
-      } else if (event.key === 'ArrowUp') {
-        if(commandHistory.length > 0 && historyIndex > 0) {
-          historyIndex--;
-          commandInput.value = commandHistory[historyIndex];
-        }
+        suggestionsDiv.style.display = 'none';
+      } 
+      else if (event.key === 'Tab') {
         event.preventDefault();
-      } else if (event.key === 'ArrowDown') {
-        if(commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
-          historyIndex++;
-          commandInput.value = commandHistory[historyIndex];
+        if (suggestions.length > 0) {
+          commandInput.value = suggestions[0].textContent;
+          suggestionsDiv.style.display = 'none';
+        }
+      }
+      else if (event.key === 'Escape') {
+        suggestionsDiv.style.display = 'none';
+        selectedSuggestion = -1;
+      }
+      else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (suggestions.length > 0 && suggestionsDiv.style.display !== 'none') {
+          navigateSuggestions(-1);
         } else {
-          historyIndex = commandHistory.length;
-          commandInput.value = "";
+          // Command history
+          if (commandHistory.length > 0 && historyIndex > 0) {
+            historyIndex--;
+            commandInput.value = commandHistory[historyIndex];
+          }
         }
+      } 
+      else if (event.key === 'ArrowDown') {
         event.preventDefault();
+        if (suggestions.length > 0 && suggestionsDiv.style.display !== 'none') {
+          navigateSuggestions(1);
+        } else {
+          // Command history
+          if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+            historyIndex++;
+            commandInput.value = commandHistory[historyIndex];
+          } else {
+            historyIndex = commandHistory.length;
+            commandInput.value = "";
+          }
+        }
       }
     });
-    document.querySelectorAll('.cmdButton').forEach(function(btn) {
-      btn.addEventListener('click', function() { executeCommand(btn.getAttribute('data-cmd')); });
+    
+    // Click outside to hide suggestions
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.input-line')) {
+        suggestionsDiv.style.display = 'none';
+        selectedSuggestion = -1;
+      }
+    });    // Enhanced button event handlers with ARIA support
+    document.querySelectorAll('.cmdButton').forEach(btn => {
+      btn.addEventListener('click', () => executeCommand(btn.getAttribute('data-cmd')));
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('tabindex', '0');
+      
+      // Keyboard accessibility for buttons
+      btn.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          executeCommand(btn.getAttribute('data-cmd'));
+        }
+      });
     });
+    
     const menuButton = document.getElementById('menuButton');
     const mobileNav = document.getElementById('mobileNav');
-    menuButton.addEventListener('click', function() { mobileNav.style.display = mobileNav.style.display === 'flex' ? 'none' : 'flex'; });
-    document.querySelectorAll('#mobileNav button').forEach(function(btn) {
-      btn.addEventListener('click', function() { executeCommand(btn.getAttribute('data-cmd')); mobileNav.style.display = 'none'; });
+    
+    menuButton.addEventListener('click', () => {
+      const isOpen = mobileNav.style.display === 'flex';
+      mobileNav.style.display = isOpen ? 'none' : 'flex';
+      menuButton.setAttribute('aria-expanded', !isOpen);
+    });
+    
+    document.querySelectorAll('#mobileNav button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        executeCommand(btn.getAttribute('data-cmd'));
+        mobileNav.style.display = 'none';
+        menuButton.setAttribute('aria-expanded', 'false');
+      });
+      
+      // Mobile button accessibility
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('tabindex', '0');
+    });
+    
+    // Initialize accessibility attributes
+    menuButton.setAttribute('aria-expanded', 'false');
+    mobileNav.setAttribute('role', 'menu');
+    document.getElementById('terminal').setAttribute('role', 'log');
+    document.getElementById('terminal').setAttribute('aria-live', 'polite');
+      // Start boot sequence when page loads
+    window.addEventListener('load', () => {
+      setTimeout(runBootSequence, 500);
     });
   </script>
 </body>
 </html>
-
-
-
-
-
-
