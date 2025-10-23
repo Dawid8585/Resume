@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Resume Terminal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<<<<<<< HEAD
   <link rel="icon" href="Icon.png" type="image/png">  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Google tag (gtag.js) -->
@@ -16,6 +17,10 @@
     gtag('config', 'G-113F5NHQFG');
   </script>
 
+=======
+  <link rel="icon" href="Icon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
   <style>
     body { margin: 0; padding: 0; background-color: black; color: #0f0; font-family: "Courier New", Courier, monospace; overflow: hidden; }
     
@@ -109,6 +114,7 @@
     #commandInput { background: transparent; border: none; color: #0f0; font-family: "Courier New", Courier, monospace; font-size: 1em; outline: none; width: 80%; }
     .underline { text-decoration: underline; }
     .flash { animation: flash 3s infinite; }
+<<<<<<< HEAD
     
     /* Color coding for different content types */
     .company-name { color: #00ff00; font-weight: bold; }
@@ -161,6 +167,8 @@
       margin: 10px 0; 
     }
     
+=======
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
     @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     @media (max-width: 768px) {
       #sidebar { display: none; }
@@ -328,10 +336,13 @@
     let pendingTimeouts = [];
     let currentLine = null;
     let flushCallback = null;
+<<<<<<< HEAD
     let colorMode = true;
     let selectedSuggestion = -1;
     let isLoading = false;
     
+=======
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
     function clearAllTimeouts() {
       pendingTimeouts.forEach(id => clearTimeout(id));
       pendingTimeouts = [];
@@ -421,6 +432,7 @@
       header: `Dawid Perkowski
 www.linkedin.com/in/dawid-perkowski
 
+<<<<<<< HEAD
 Accomplished Engineering Manager and U.S. Marine Corps Veteran with a strong background in leading high performing software teams to deliver scalable, high quality solutions. Proven ability to mentor and guide the professional and technical development of engineers, fostering a culture of continuous improvement and collaboration. Experienced in partnering with product managers to define roadmaps, lead complex technical projects, and improve architectural design.`,
       
       skills: `SKILLS & QUALIFICATIONS
@@ -430,6 +442,18 @@ Programming & Scripting: Go, Python, JavaScript/TypeScript
 Frameworks & Libraries: .NET (ASP.NET, .NET MVC), Spring Boot, Node.js, React, Next.js, Angular, Blazor, Palantir Foundry
 Databases: PostgreSQL, SQL Server, Appwrite, Supabase
 Cloud & DevOps: AWS, Azure (Cloud Services, DevOps), GitLab, Azure DevOps, Docker, Kafka, Dynatrace, SonarQube
+=======
+Innovative .NET Developer and U.S. Marine Corps Veteran with a proven track record of delivering high-quality, scalable software solutions.
+Skilled in both backend and frontend technologies, committed to creating seamless, user-focused experiences.
+Brings discipline, leadership, and a relentless drive for continuous improvement.
+Th
+rives in collaborative environments, sharing knowledge and fostering teamwork to consistently ensure project success.`;
+    const resumeSkills = `SKILLS & QUALIFICATIONS
+Programming & Scripting Languages: C#, Java, Go, Python, JavaScript/TypeScript;
+Frameworks & Libraries: .NET (ASP.NET, .NET MVC), Node.js, React, Next.js, Angular, Blazor, Palantir Foundry;
+Web Services & APIs: GraphQL, RESTful APIs, SOAP;
+Frontend & UI: HTML/CSS, Bootstrap;
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
 Languages: Native Bilingual (Polish and English).
 Web Services & APIs: GraphQL, RESTful APIs, SOAP
 Methodologies & Testing: Agile Scrum, TDD (nUnit, xUnit, Moq), Selenium, TestNG`,
@@ -444,6 +468,7 @@ Build plans for prioritizing technical and resourcing challenges, enhancing team
 Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
 Utilize a modern tech stack including .NET, Palantir Foundry, Java, Go, React, Kafka, and Oracle DB to deliver secure, scalable solutions.
 
+<<<<<<< HEAD
 WedWallet										San Francisco, CA		
 Founding Engineer										May 2024 – Present
 Spearhead the design and development of a fintech startup from the ground up, implementing modern .NET API standards.
@@ -451,6 +476,18 @@ Architect and build core platform features using .NET Aspire, React, and other c
 Oversee continuous integration and deployment pipelines, ensuring rapid and reliable feature releases.
 Collaborate closely with stakeholders to refine product requirements, deliver proof-of-concepts, and guide product roadmap.
 Implement best practices around security, scalability, and fault tolerance to support the platform's growth trajectory.
+=======
+Dept of Health (ACF/ORR)                                                                 Remote
+Senior Software Engineering Lead                                                         September 2024 – Present
+Developed, maintained, enhanced, and troubleshot multiple Web Applications used by thousands of clients in multiple environments, using Oracle SQL as the database language.
+● Lead multiple software technology teams, overseeing end-to-end development processes for mission-critical applications.
+● Modernize legacy codebases and introduce AI-driven features to optimize workflows and enhance user experiences.
+● Establish coding standards, architectural guidelines, and best p
+actices to ensure maintainable, high-quality software.
+● Review processes and code to identify improvements, boost team efficiency, and align development efforts with strategic objectives.
+● Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
+● Utilize .NET, Palantir Foundry, Java, Go, React, Next.js, Python, Kafka, GraphQL, REST APIs, and Oracle DB to deliver secure, scalable solutions.
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
 
 ALPHA OMEGA INTEGRATION                                                                                                                                                                   Washington, D.C.
 .NET Software Developer 								 	Jan 2020 - 2024
@@ -528,6 +565,7 @@ ${resumeData.additional}`;
     }    const commands = {
       "help": function() { return `Available commands:
 help       - List commands
+<<<<<<< HEAD
 rsme -fl   - Full resume
 rsme -dwnld- Resume download  
 rsme -hd   - Header
@@ -718,6 +756,29 @@ Example: man search`;
                          (_(___/                         \\\\_____)_)
                          Charmander`
         ];
+=======
+rsme -fl  - Full resume
+rsme -dwnld  - Resume download
+rsme -hd  - Header
+rsme -sk  - Skills & qualifications
+rsme -ex  - Experience
+rsme -ce  - Certifications / Education
+rsme -ad  - Additional info
+rsme -ct  - Contact info
+pokemon, terminal, cmd, mac - Random Pokémon art
+rr         - Redirect to YouTube in full screen
+cl or clear - Clear terminal`; },
+      "rsme -fl": function() { return resumeFull; },
+      "rsme -hd": function() { return resumeHeader; },
+      "rsme -sk": function() { return resumeSkills; },
+      "rsme -ex": function() { return resumeExperience; },
+      "rsme -ce": function() { return resumeCertifications; },
+      "rsme -ad": function() { return resumeAdditional; },
+      "rsme -ct": function() { return `Contact Information:
+LinkedIn: www.linkedin.com/in/dawid-perkowski`; },
+      "pokemon": function() {
+        const pokemonArts = [/* … */];
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
         return pokemonArts[Math.floor(Math.random() * pokemonArts.length)];
       },
       
@@ -782,12 +843,16 @@ Example: man search`;
     const suggestionsDiv = document.getElementById('suggestions');
     let commandHistory = [];
     let historyIndex = -1;
+<<<<<<< HEAD
     
+=======
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
     function typeLine(text, callback) {
       const lineElem = document.createElement('div');
       lineElem.className = 'line';
       lineElem.innerHTML = text; // Use innerHTML to support HTML tags for colors
       outputDiv.appendChild(lineElem);
+<<<<<<< HEAD
       
       if (colorMode) {
         // Apply typing animation with colors
@@ -815,6 +880,23 @@ Example: man search`;
         // Instant display for non-color mode
         terminalElem.scrollTop = terminalElem.scrollHeight;
         if (callback) callback();
+=======
+      let i = 0;
+      currentLine = { lineElem, text };
+      flushCallback = callback;
+      function typeChar() {
+        if (i < text.length) {
+          lineElem.textContent += text.charAt(i);
+          i++;
+          let t = setTimeout(typeChar, 10);
+          pendingTimeouts.push(t);
+          terminalElem.scrollTop = terminalElem.scrollHeight;
+        } else {
+          currentLine = null;
+          flushCallback = null;
+          callback && callback();
+        }
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
       }
     }
     function typeMultipleLines(lines, index = 0) {
@@ -832,7 +914,12 @@ Example: man search`;
         cb && cb();
       }
     }
+<<<<<<< HEAD
     document.addEventListener('keydown', flushTyping);    function executeCommand(cmd) {
+=======
+    document.addEventListener('keydown', flushTyping);
+    function executeCommand(cmd) {
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
       clearAllTimeouts();
       suggestionsDiv.style.display = 'none';
       
@@ -845,6 +932,7 @@ Example: man search`;
       commandLine.className = 'line';
       commandLine.textContent = '> ' + cmd;
       outputDiv.appendChild(commandLine);
+<<<<<<< HEAD
       
       // Parse command and arguments
       const parts = cmd.trim().split(' ');
@@ -916,6 +1004,23 @@ Example: man search`;
       showSuggestions(event.target.value);
     });
     
+=======
+      const normalizedCmd = cmd.toLowerCase();
+      if (Math.random() < 1/6) {
+        const overrideCmd = Math.random() < 0.5 ? "pokemon" : "rr";
+        const response = commands[overrideCmd]();
+        if (response) typeMultipleLines(response.split('\n'));
+      } else {
+        if (commands[normalizedCmd]) {
+          const response = commands[normalizedCmd]();
+          if (response) typeMultipleLines(response.split('\n'));
+        } else {
+          typeLine('Command not found. Type "help" for available commands.');
+        }
+      }
+      terminalElem.scrollTop = terminalElem.scrollHeight;
+    }
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
     commandInput.addEventListener('keydown', function(event) {
       const suggestions = document.querySelectorAll('.suggestion');
       
@@ -929,6 +1034,7 @@ Example: man search`;
         const cmd = commandInput.value.trim();
         executeCommand(cmd);
         commandInput.value = '';
+<<<<<<< HEAD
         suggestionsDiv.style.display = 'none';
       } 
       else if (event.key === 'Tab') {
@@ -946,6 +1052,18 @@ Example: man search`;
         event.preventDefault();
         if (suggestions.length > 0 && suggestionsDiv.style.display !== 'none') {
           navigateSuggestions(-1);
+=======
+      } else if (event.key === 'ArrowUp') {
+        if (commandHistory.length > 0 && historyIndex > 0) {
+          historyIndex--;
+          commandInput.value = commandHistory[historyIndex];
+        }
+        event.preventDefault();
+      } else if (event.key === 'ArrowDown') {
+        if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          commandInput.value = commandHistory[historyIndex];
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
         } else {
           // Command history
           if (commandHistory.length > 0 && historyIndex > 0) {
@@ -970,6 +1088,7 @@ Example: man search`;
         }
       }
     });
+<<<<<<< HEAD
     
     // Click outside to hide suggestions
     document.addEventListener('click', function(event) {
@@ -1022,6 +1141,16 @@ Example: man search`;
     window.addEventListener('load', () => {
       setTimeout(runBootSequence, 500);
     });
+=======
+    document.querySelectorAll('.cmdButton').forEach(btn => btn.addEventListener('click', () => executeCommand(btn.getAttribute('data-cmd'))));
+    const menuButton = document.getElementById('menuButton');
+    const mobileNav = document.getElementById('mobileNav');
+    menuButton.addEventListener('click', () => mobileNav.style.display = mobileNav.style.display === 'flex' ? 'none' : 'flex');
+    document.querySelectorAll('#mobileNav button').forEach(btn => btn.addEventListener('click', () => {
+      executeCommand(btn.getAttribute('data-cmd'));
+      mobileNav.style.display = 'none';
+    }));
+>>>>>>> c09ac86d2a125fef540baecaf18bf590e44f7ab8
   </script>
 </body>
 </html>
