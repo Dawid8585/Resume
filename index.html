@@ -239,6 +239,24 @@
       padding: 2px 7px; margin: 2px; font-size: 12px;
     }
 
+    /* === SNAKE D-PAD === */
+    #snakeDpad { display: none; margin-top: 8px; }
+    .dpad-row { display: flex; justify-content: center; gap: 4px; }
+    .dpad-btn {
+      width: 44px; height: 44px; font-size: 18px;
+      background: #333; color: #0f0; border: 2px outset #555;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      border-radius: 4px; user-select: none; -webkit-user-select: none;
+    }
+    .dpad-btn:active { border-style: inset; background: #0a0; color: #000; }
+    .dpad-center { font-size: 12px; }
+    .snake-desktop-hint { display: block; }
+
+    @media (max-width: 768px) {
+      #snakeDpad { display: block; }
+      .snake-desktop-hint { display: none; }
+    }
+
     /* === MOBILE === */
     @media (max-width: 768px) {
       #desktopIcons { display: flex; flex-direction: row; flex-wrap: wrap; position: static; width: auto; height: auto; padding: 8px; gap: 8px; }
@@ -477,7 +495,16 @@ Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate veh
       <div class="window-body" style="background:#000;padding:4px;display:flex;flex-direction:column;align-items:center;">
         <div style="color:#0f0;font-family:monospace;font-size:12px;margin:4px 0;" id="snakeScore">Score: 0</div>
         <canvas id="snakeCanvas" width="300" height="300" style="border:1px solid #0f0;background:#001a00;"></canvas>
-        <div style="color:#0f0;font-family:monospace;font-size:11px;margin-top:6px;text-align:center;">Arrow keys to move · Space to pause<br>Click canvas to start</div>
+        <div style="color:#0f0;font-family:monospace;font-size:11px;margin-top:6px;text-align:center;" class="snake-desktop-hint">Arrow keys to move · Space to pause<br>Click canvas to start</div>
+        <div id="snakeDpad">
+          <div class="dpad-row"><button class="dpad-btn" ontouchstart="snakeDpadDir(0,-1)" onclick="snakeDpadDir(0,-1)">▲</button></div>
+          <div class="dpad-row">
+            <button class="dpad-btn" ontouchstart="snakeDpadDir(-1,0)" onclick="snakeDpadDir(-1,0)">◀</button>
+            <button class="dpad-btn dpad-center" ontouchstart="if(!snakeRunning)startSnake();else snakePaused=!snakePaused;" onclick="if(!snakeRunning)startSnake();else snakePaused=!snakePaused;">●</button>
+            <button class="dpad-btn" ontouchstart="snakeDpadDir(1,0)" onclick="snakeDpadDir(1,0)">▶</button>
+          </div>
+          <div class="dpad-row"><button class="dpad-btn" ontouchstart="snakeDpadDir(0,1)" onclick="snakeDpadDir(0,1)">▼</button></div>
+        </div>
       </div>
     </div>
 
@@ -503,7 +530,7 @@ Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate veh
     </div>
 
     <!-- Terminal Window -->
-    <div class="app-window open" id="win-terminal" style="top:40px;left:160px;width:560px;height:400px;">
+    <div class="app-window" id="win-terminal" style="top:40px;left:160px;width:560px;height:400px;">
       <div class="window-titlebar" onmousedown="startDrag(event,'win-terminal')">
         <span class="window-title">Terminal</span>
         <div class="window-controls">
@@ -592,23 +619,10 @@ Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate veh
     // === BOOT SEQUENCE (preserved from original) ===
     function getBootMessages() {
       return [
-        { text: "DpOS BOOT SEQUENCE INITIATED", type: "boot-header", delay: 80 },
-        { text: "████████████████████████████████", type: "boot-system", delay: 40 },
-        { text: "DpOS v2.0 Personal Operating System", type: "boot-system", delay: 80 },
-        { text: "Copyright (c) 2025 Dawid Perkowski", type: "boot-system", delay: 80 },
-        { text: "████████████████████████████████", type: "boot-system", delay: 40 },
-        { text: "", type: "", delay: 150 },
-        { text: "Initializing system components...", type: "boot-loading", delay: 200 },
-        { text: "Loading BIOS..................[OK]", type: "boot-ok", delay: 300 },
-        { text: "Checking memory integrity.....[OK]", type: "boot-ok", delay: 250 },
-        { text: "Loading device drivers........[OK]", type: "boot-ok", delay: 300 },
-        { text: "Mounting filesystem...........[OK]", type: "boot-ok", delay: 250 },
-        { text: "", type: "", delay: 200 },
-        { text: ">>> LOADING PERSONAL ENVIRONMENT <<<", type: "boot-warning", delay: 400 },
-        { text: "Authenticating user...", type: "boot-loading", delay: 600 },
-        { text: "System ready. Awaiting login.", type: "boot-ok", delay: 400 },
-        { text: "", type: "", delay: 200 },
-        { text: "Starting DpOS desktop...", type: "boot-complete", delay: 600 }
+        { text: "DpOS v2.0", type: "boot-header", delay: 40 },
+        { text: "Loading.........[OK]", type: "boot-ok", delay: 80 },
+        { text: "Mounting........[OK]", type: "boot-ok", delay: 80 },
+        { text: "Starting desktop...", type: "boot-complete", delay: 200 }
       ];
     }
 
@@ -623,7 +637,7 @@ Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate veh
       bootContent.appendChild(div);
       let i = 0;
       (function typeChar() {
-        if (i < message.text.length) { div.textContent = message.text.substring(0, i + 1); i++; setTimeout(typeChar, 20); }
+        if (i < message.text.length) { div.textContent = message.text.substring(0, i + 1); i++; setTimeout(typeChar, 8); }
         else { setTimeout(callback, message.delay); }
       })();
     }
@@ -994,6 +1008,11 @@ Side: film photography (35mm), climbing, car tech.`,
     }
 
     function updateSnakeScore() { document.getElementById('snakeScore').textContent='Score: '+snakeScore; }
+
+    function snakeDpadDir(x, y) {
+      if (!snakeRunning) { startSnake(); return; }
+      if (x !== -snakeDir.x || y !== -snakeDir.y) { snakeDir = {x, y}; }
+    }
 
     document.getElementById('snakeCanvas').addEventListener('click', () => { if(!snakeRunning) startSnake(); });
 
