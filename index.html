@@ -2,1008 +2,1112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Resume Terminal</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-  <link rel="icon" href="Icon.png" type="image/png">  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <title>DpOS</title>
+  <link rel="icon" href="Icon.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-113F5NHQFG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-113F5NHQFG');
   </script>
 
   <style>
-    body { margin: 0; padding: 0; background-color: black; color: #0f0; font-family: "Courier New", Courier, monospace; overflow: hidden; }
-    
-    /* Boot screen styles */
-    #bootScreen { 
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%; 
-      background: black; 
-      color: #0f0; 
-      z-index: 10000; 
-      display: flex; 
-      flex-direction: column; 
-      justify-content: flex-start; 
-      padding: 20px; 
-      box-sizing: border-box;
-      font-size: 0.9em;
-      line-height: 1.2;
+    /* === RESET & BASE === */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "MS Sans Serif", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 12px;
+      overflow: hidden;
+      height: 100vh;
+      user-select: none;
     }
-    
-    .boot-line { 
-      margin: 2px 0; 
-      font-family: "Courier New", Courier, monospace; 
+
+    /* === LOGIN SCREEN === */
+    #loginScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #008080;
+      background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23007070'/%3E%3C/svg%3E");
+      z-index: 100000;
+      display: flex; align-items: center; justify-content: center;
     }
-    
-    .boot-cursor::after { 
-      content: '_'; 
-      animation: blink-cursor 1s infinite; 
+    #loginBox {
+      background: #c0c0c0; border: 2px outset #fff;
+      padding: 24px 32px; width: 320px;
+      box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+      text-align: center;
     }
-    
+    #loginHeader { margin-bottom: 16px; }
+    #loginTitle { font-size: 16px; font-weight: bold; margin-top: 4px; }
+    #loginSubtitle { font-size: 11px; color: #444; margin-top: 2px; }
+    #loginForm { margin: 16px 0; text-align: left; }
+    #loginLabel { display: block; font-size: 12px; margin-bottom: 6px; }
+    #loginInput {
+      width: 100%; padding: 4px 6px; font-size: 13px;
+      border: 2px inset #808080; background: #fff;
+      font-family: "MS Sans Serif", Tahoma, sans-serif;
+      outline: none;
+    }
+    #loginBtn {
+      margin-top: 12px; padding: 4px 20px; font-size: 12px;
+      background: #c0c0c0; border: 2px outset #fff; cursor: pointer;
+      font-weight: bold; width: 100%;
+    }
+    #loginBtn:active { border-style: inset; }
+    #loginFooter { font-size: 10px; color: #666; margin-top: 12px; }
+
+    /* === BOOT SCREEN === */
+    #bootScreen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: black; color: #0f0; z-index: 99999;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      padding: 20px; font-family: "Courier New", monospace; font-size: 0.9em; line-height: 1.3;
+    }
+    .boot-line { margin: 2px 0; }
     .boot-ok { color: #0f0; }
     .boot-loading { color: #ffff00; }
     .boot-system { color: #00ffff; }
-    .boot-memory { color: #ff6600; }
-    .boot-complete { color: #ffffff; font-weight: bold; }
-      @keyframes blink-cursor { 
-      0%, 50% { opacity: 1; } 
-      51%, 100% { opacity: 0; } 
-    }
-    
-    #bootScreen.fade-out {
-      opacity: 0;
-      transition: opacity 1s ease-out;
-    }
-    
-    .boot-header { 
-      color: #0f0; 
-      font-weight: bold; 
-      text-shadow: 0 0 10px #0f0; 
-      margin-bottom: 10px; 
-    }
-    
+    .boot-header { color: #0f0; font-weight: bold; text-shadow: 0 0 10px #0f0; margin-bottom: 10px; }
     .boot-warning { color: #ff0; }
-    
-    #sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 240px; background-color: black; border-right: 1px solid #0f0; padding: 20px; box-sizing: border-box; }
-    #sidebar h2 { margin-top: 0; font-size: 1.4em; text-align: center; border-bottom: 1px solid #0f0; padding-bottom: 10px; }
-    #sidebar ul { list-style: none; padding: 0; margin: 20px 0 0 0; line-height: 1.6em; }
-    #sidebar li { margin-bottom: 8px; }
-    .cmdButton { background: none; border: none; color: #0f0; font-family: inherit; font-size: 1em; text-align: left; width: 100%; cursor: pointer; padding: 0; }
-    #main { margin-left: 240px; height: 100vh; display: flex; flex-direction: column; opacity: 0; transition: opacity 1s ease-in; }
-    #main.show { opacity: 1; }
-    #header { text-align: center; padding: 20px; white-space: pre; }
-    #header span { font-size: 0.7em; display: block; margin-top: 10px; }
-    #mobileNavContainer { display: none; padding: 10px; background: black; border-bottom: 1px solid #0f0; }
-    #menuButton { background: transparent; border: 1px solid #0f0; color: #0f0; padding: 10px; width: 100%; font-size: 1em; }
-    #mobileNav { display: none; flex-wrap: wrap; justify-content: center; background: black; padding: 10px 0; }
-    #mobileNav button { background: transparent; border: 1px solid #0f0; color: #0f0; margin: 5px; padding: 5px 10px; font-size: 0.9em; cursor: pointer; }
-    #terminal { flex-grow: 1; padding: 20px; box-sizing: border-box; overflow-y: scroll; -ms-overflow-style: none; scrollbar-width: none; position: relative; }
-    #terminal::-webkit-scrollbar { display: none; }
-    .line { margin: 5px 0; white-space: pre-wrap; }
-    .input-line { display: flex; align-items: center; margin: 5px 0; position: relative; }
-    .prompt { font-weight: bold; margin-right: 5px; }
-    #commandInput { background: transparent; border: none; color: #0f0; font-family: "Courier New", Courier, monospace; font-size: 1em; outline: none; width: 80%; }
-    .underline { text-decoration: underline; }
-    .flash { animation: flash 3s infinite; }
-    
-    /* Color coding for different content types */
-    .company-name { color: #00ff00; font-weight: bold; }
-    .job-title { color: #ffff00; }
-    .date { color: #ff6600; }
-    .skill { color: #00ffff; }
-    .location { color: #ff00ff; }
-    .achievement { color: #ffffff; }
-    .section-header { color: #00ff00; font-weight: bold; text-decoration: underline; }
-    
-    /* Auto-complete suggestions */
-    #suggestions { 
-      position: absolute; 
-      top: 100%; 
-      left: 0; 
-      right: 0; 
-      background: rgba(0, 20, 0, 0.95); 
-      border: 1px solid #0f0; 
-      border-top: none; 
-      max-height: 150px; 
-      overflow-y: auto; 
-      z-index: 1000; 
-      display: none; 
+    .boot-complete { color: #fff; font-weight: bold; }
+    #bootScreen.shutoff {
+      animation: crt-off 0.4s ease-in forwards;
     }
-    .suggestion { 
-      padding: 5px 10px; 
-      cursor: pointer; 
-      color: #0f0; 
+    @keyframes crt-off {
+      0% { transform: scale(1,1); opacity: 1; filter: brightness(1); }
+      40% { transform: scale(1.02,0.005); opacity: 1; filter: brightness(3); }
+      70% { transform: scale(0.6,0.002); opacity: 0.8; filter: brightness(5); }
+      100% { transform: scale(0,0); opacity: 0; filter: brightness(0); }
     }
-    .suggestion:hover, .suggestion.selected { 
-      background: rgba(0, 255, 0, 0.2); 
+
+    /* === DESKTOP === */
+    #desktop {
+      width: 100%; height: 100vh;
+      background-color: #008080;
+      background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23007070'/%3E%3C/svg%3E");
+      position: relative;
+      display: none;
     }
-    
-    /* Loading indicator */
-    .loading { 
-      color: #ffff00; 
-      animation: pulse 1s infinite; 
+    #desktop.show { display: block; }
+
+    /* === DESKTOP ICONS === */
+    #desktopIcons {
+      position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 32px);
     }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    
-    /* Error messages */
-    .error { color: #ff0000; }
-    .success { color: #00ff00; }
-    .warning { color: #ffff00; }
-    
-    /* QR Code container */
-    #qrContainer { 
-      display: flex; 
-      justify-content: center; 
-      margin: 10px 0; 
+    .desktop-icon {
+      position: absolute;
+      display: flex; flex-direction: column; align-items: center;
+      width: 72px; cursor: pointer; padding: 4px; border: 1px solid transparent;
+      text-align: center;
     }
-    
-    @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+    .desktop-icon:hover { background: rgba(0,0,128,0.3); border: 1px dotted #fff; }
+    .desktop-icon:active { background: rgba(0,0,128,0.5); }
+    .desktop-icon .icon-img {
+      width: 32px; height: 32px; margin-bottom: 4px;
+      image-rendering: pixelated;
+    }
+    .desktop-icon .icon-label {
+      color: #fff; font-size: 11px; text-shadow: 1px 1px 1px #000;
+      word-wrap: break-word; line-height: 1.2;
+    }
+
+    /* === TASKBAR === */
+    #taskbar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 32px;
+      background: #c0c0c0;
+      border-top: 2px solid #fff;
+      display: flex; align-items: center; padding: 2px 4px;
+      z-index: 9999;
+    }
+    #startBtn {
+      height: 24px; padding: 2px 8px; font-weight: bold; font-size: 11px;
+      background: #c0c0c0; border: 2px outset #fff; cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+    }
+    #startBtn:active, #startBtn.active { border-style: inset; }
+    #startBtn .start-icon { width: 16px; height: 16px; image-rendering: pixelated; }
+    #taskbarWindows { display: flex; gap: 2px; margin-left: 8px; flex: 1; overflow: hidden; }
+    .taskbar-item {
+      height: 24px; padding: 2px 8px; font-size: 11px;
+      background: #c0c0c0; border: 2px outset #fff; cursor: pointer;
+      max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .taskbar-item.active { border-style: inset; background: #fff; }
+    #taskbarClock {
+      margin-left: auto; padding: 2px 8px; font-size: 11px;
+      border: 1px inset #808080; background: #c0c0c0; min-width: 60px; text-align: center;
+    }
+
+    /* === START MENU === */
+    #startMenu {
+      position: fixed; bottom: 32px; left: 0;
+      width: 200px; background: #c0c0c0;
+      border: 2px outset #fff; display: none; z-index: 10000;
+      box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    #startMenu.show { display: block; }
+    .start-menu-sidebar {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 24px;
+      background: linear-gradient(to top, #000080, #1084d0);
+      display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
+    }
+    .start-menu-sidebar span {
+      writing-mode: vertical-rl; transform: rotate(180deg);
+      color: #fff; font-weight: bold; font-size: 14px; letter-spacing: 2px;
+    }
+    .start-menu-items { margin-left: 24px; padding: 4px 0; }
+    .start-menu-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; cursor: pointer; font-size: 12px;
+    }
+    .start-menu-item:hover { background: #000080; color: #fff; }
+    .start-menu-item .menu-icon { width: 16px; height: 16px; image-rendering: pixelated; }
+    .start-menu-separator { height: 1px; background: #808080; margin: 2px 24px 2px 36px; border-bottom: 1px solid #fff; }
+
+    /* === WINDOWS === */
+    .app-window {
+      position: absolute; min-width: 320px; min-height: 200px;
+      background: #c0c0c0; border: 2px outset #fff;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+      display: none; flex-direction: column;
+    }
+    .app-window.open { display: flex; }
+    .app-window.minimized { display: none; }
+    .app-window.maximized {
+      top: 0 !important; left: 0 !important;
+      width: 100% !important; height: calc(100vh - 32px) !important;
+    }
+    .window-titlebar {
+      height: 22px; background: #000080; color: #fff;
+      display: flex; align-items: center; padding: 0 4px;
+      cursor: grab; font-size: 12px; font-weight: bold;
+      flex-shrink: 0;
+    }
+    .window-titlebar.inactive { background: #808080; }
+    .window-title { flex: 1; padding-left: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .window-controls { display: flex; gap: 2px; }
+    .window-btn {
+      width: 16px; height: 14px; font-size: 10px; font-weight: bold;
+      background: #c0c0c0; border: 1px outset #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; line-height: 1;
+    }
+    .window-btn:active { border-style: inset; }
+    .window-body {
+      flex: 1; overflow: auto; border: 2px inset #808080; margin: 4px;
+      background: #fff; padding: 8px; font-size: 12px; line-height: 1.5;
+      color: #000;
+    }
+
+    /* === TERMINAL WINDOW BODY === */
+    .terminal-body {
+      background: #000; color: #0f0; font-family: "Courier New", monospace;
+      font-size: 13px; padding: 8px; cursor: text;
+    }
+    .terminal-body .line { margin: 2px 0; white-space: pre-wrap; }
+    .terminal-body .input-line { display: flex; align-items: center; margin: 2px 0; }
+    .terminal-body .prompt { font-weight: bold; margin-right: 5px; color: #0f0; }
+    .terminal-body #commandInput {
+      background: transparent; border: none; color: #0f0;
+      font-family: "Courier New", monospace; font-size: 13px;
+      outline: none; width: calc(100% - 20px);
+    }
+    .terminal-body .error { color: #ff4444; }
+    .terminal-body .success { color: #44ff44; }
+    .terminal-body .warning { color: #ffff44; }
+    .terminal-body .highlight { color: #00ffff; }
+
+    /* === CONTENT STYLES === */
+    .window-body h2 { font-size: 14px; margin-bottom: 8px; color: #000080; }
+    .window-body h3 { font-size: 12px; margin: 8px 0 4px; color: #000080; }
+    .window-body p { margin-bottom: 8px; }
+    .window-body ul { margin-left: 16px; margin-bottom: 8px; }
+    .window-body li { margin-bottom: 4px; }
+    .window-body a { color: #000080; }
+    .window-body a:hover { color: #0000ff; }
+    .window-body .tag {
+      display: inline-block; background: #000080; color: #fff;
+      padding: 1px 6px; margin: 2px; font-size: 10px;
+    }
+
+    /* === MOBILE === */
     @media (max-width: 768px) {
-      #sidebar { display: none; }
-      #main { margin-left: 0; }
-      #header { padding: 10px; }
-      #mobileNavContainer { display: block; }
-      #terminal { padding: 10px; height: calc(100vh - 200px); }
+      #desktopIcons { display: flex; flex-direction: row; flex-wrap: wrap; position: static; width: auto; height: auto; padding: 8px; gap: 8px; }
+      .desktop-icon { position: static !important; }
+      .app-window {
+        position: fixed !important; top: 0 !important; left: 0 !important;
+        width: 100% !important; height: calc(100% - 32px) !important;
+        min-width: unset; min-height: unset;
+      }
+      .desktop-icon { width: 60px; }
+      .desktop-icon .icon-img { width: 28px; height: 28px; }
+      .desktop-icon .icon-label { font-size: 10px; }
     }
   </style>
 </head>
-<body>  <!-- Boot Screen -->
+<body>
+
+  <!-- Boot Screen -->
   <div id="bootScreen">
     <div id="bootContent"></div>
   </div>
-  
-  <div id="sidebar">
-    <h2>Commands</h2>
-    <ul>
-      <li><button class="cmdButton" data-cmd="help">- help <br> List commands</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -fl">- rsme -fl <br> Full resume</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -dwnld">- rsme -dwnld <br> Download Resume</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -hd">- rsme -hd <br> Header</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -sk">- rsme -sk <br> Skills & qualifications</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ex">- rsme -ex <br> Experience</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ce">- rsme -ce <br> Certifications</button></li>
-      <li><button class="cmdButton" data-cmd="rsme -ad">- rsme -ad <br> Additional info</button></li>      <li><button class="cmdButton" data-cmd="rsme -ct">- rsme -ct <br> Contact info</button></li>
-      <li><button class="cmdButton" data-cmd="search">- search <br> Search resume</button></li>
-      <li><button class="cmdButton" data-cmd="qr">- qr <br> Generate QR code</button></li>
-      <li><button class="cmdButton" data-cmd="export">- export <br> Export resume</button></li>
-      <li><button class="cmdButton" data-cmd="man">- man <br> Manual pages</button></li>
-      <li><button class="cmdButton" data-cmd="cl">- cl <br> Clear terminal</button></li>
-    </ul>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" style="display:none;">
+    <div id="loginBox">
+      <div id="loginHeader">
+        <svg viewBox="0 0 32 32" width="32" height="32" style="margin-bottom:8px;"><rect x="4" y="12" width="24" height="16" rx="6" fill="#d4a44c"/><circle cx="16" cy="10" r="9" fill="#e8be6a"/><path d="M7,7 Q9,1 11,5" fill="#e8be6a" stroke="#b8893a" stroke-width="0.5"/><path d="M25,7 Q23,1 21,5" fill="#e8be6a" stroke="#b8893a" stroke-width="0.5"/><circle cx="12" cy="10" r="2.5" fill="#2a2a2a"/><circle cx="20" cy="10" r="2.5" fill="#2a2a2a"/><circle cx="11.3" cy="9.3" r="0.8" fill="#fff"/><circle cx="19.3" cy="9.3" r="0.8" fill="#fff"/><ellipse cx="16" cy="13" rx="1.5" ry="1" fill="#ffaaaa"/><path d="M14,14.5 Q16,16.5 18,14.5" fill="none" stroke="#555" stroke-width="0.7"/><line x1="7" y1="11" x2="2" y2="10" stroke="#b8893a" stroke-width="0.5"/><line x1="7" y1="13" x2="2" y2="14" stroke="#b8893a" stroke-width="0.5"/><line x1="25" y1="11" x2="30" y2="10" stroke="#b8893a" stroke-width="0.5"/><line x1="25" y1="13" x2="30" y2="14" stroke="#b8893a" stroke-width="0.5"/><ellipse cx="10" cy="24" rx="3" ry="2" fill="#c89840"/><ellipse cx="22" cy="24" rx="3" ry="2" fill="#c89840"/><path d="M24,20 Q28,18 27,22 Q26,25 24,23" fill="#d4a44c" stroke="#b8893a" stroke-width="0.4"/></svg>
+        <div id="loginTitle">Welcome to DpOS</div>
+        <div id="loginSubtitle">Personal Operating System v2.0</div>
+      </div>
+      <div id="loginForm">
+        <label id="loginLabel">Enter your name to log in:</label>
+        <input type="text" id="loginInput" placeholder="visitor" maxlength="40" aria-label="Login name">
+        <button id="loginBtn" onclick="handleLogin()">Log In</button>
+      </div>
+      <div id="loginFooter">No password required. Just say hi.</div>
+    </div>
   </div>
-  <div id="main">
-    <div id="header">
- ____  _____ ____  _   _ __  __ _____ 
-|  _ \| ____/ ___|| | | |  \/  | ____|
-| |_) |  _| \___ \| | | | |\/| |  _|  
-|  _ <| |___ ___) | |_| | |  | | |___ 
-|_| \_\_____|____/ \___/|_|  |_|_____| 
-      <span>by dawid perkowski</span>
-    </div>
-    <div id="mobileNavContainer">
-      <button id="menuButton">Menu</button>
-      <div id="mobileNav">
-        <button data-cmd="help">help</button>
-        <button data-cmd="rsme -fl">rsme -fl</button>
-        <button data-cmd="rsme -hd">rsme -hd</button>
-        <button data-cmd="rsme -sk">rsme -sk</button>
-        <button data-cmd="rsme -ex">rsme -ex</button>
-        <button data-cmd="rsme -ce">rsme -ce</button>
-        <button data-cmd="rsme -ad">rsme -ad</button>        <button data-cmd="rsme -dwnld">rsme -dwnld</button>
-        <button data-cmd="rsme -ct">rsme -ct</button>
-        <button data-cmd="search">search</button>
-        <button data-cmd="qr">qr</button>
-        <button data-cmd="export">export</button>
-        <button data-cmd="man">man</button>
-        <button data-cmd="cl">cl</button>
+
+  <!-- Desktop -->
+  <div id="desktop">
+    <!-- Desktop Icons -->
+    <div id="desktopIcons">
+      <div class="desktop-icon" style="left:16px;top:16px;" ondblclick="openWindow('about')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="4" y="2" width="24" height="28" fill="#fff" stroke="#000" stroke-width="1"/><rect x="6" y="4" width="20" height="4" fill="#000080"/><rect x="6" y="10" width="20" height="2" fill="#808080"/><rect x="6" y="14" width="16" height="2" fill="#808080"/><rect x="6" y="18" width="18" height="2" fill="#808080"/><rect x="6" y="22" width="14" height="2" fill="#808080"/></svg>
+        <span class="icon-label">About.exe</span>
+      </div>
+      <div class="desktop-icon" style="left:16px;top:100px;" ondblclick="openWindow('startup')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="2" y="6" width="28" height="22" fill="#ffff00" stroke="#000" stroke-width="1"/><polygon points="16,2 28,10 4,10" fill="#ff8800"/><rect x="12" y="16" width="8" height="12" fill="#000080"/></svg>
+        <span class="icon-label">Startup</span>
+      </div>
+      <div class="desktop-icon" style="left:16px;top:184px;" ondblclick="openWindow('buildlog')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="4" y="2" width="24" height="28" fill="#ffffcc" stroke="#000" stroke-width="1"/><rect x="6" y="5" width="12" height="2" fill="#000"/><rect x="6" y="9" width="18" height="1" fill="#808080"/><rect x="6" y="12" width="16" height="1" fill="#808080"/><rect x="6" y="15" width="18" height="1" fill="#808080"/><rect x="6" y="18" width="14" height="1" fill="#808080"/><rect x="6" y="21" width="17" height="1" fill="#808080"/><rect x="6" y="24" width="12" height="1" fill="#808080"/></svg>
+        <span class="icon-label">Build Log</span>
+      </div>
+      <div class="desktop-icon" style="left:16px;top:268px;" ondblclick="openWindow('principles')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="4" y="2" width="24" height="28" fill="#fff" stroke="#000" stroke-width="1"/><text x="8" y="18" font-size="8" font-family="monospace" fill="#000">TXT</text></svg>
+        <span class="icon-label">Principles.txt</span>
+      </div>
+      <div class="desktop-icon" style="left:16px;top:352px;" ondblclick="openWindow('archive')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="2" y="8" width="28" height="20" fill="#c0c000" stroke="#000" stroke-width="1"/><rect x="2" y="4" width="14" height="6" fill="#c0c000" stroke="#000" stroke-width="1"/><rect x="10" y="14" width="12" height="4" fill="#808000" stroke="#000" stroke-width="1"/></svg>
+        <span class="icon-label">Archive</span>
+      </div>
+      <div class="desktop-icon" style="left:16px;top:436px;" ondblclick="openWindow('contact')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="2" y="6" width="28" height="20" fill="#fff" stroke="#000" stroke-width="1"/><polygon points="2,6 16,18 30,6" fill="none" stroke="#000080" stroke-width="1"/><rect x="4" y="24" width="24" height="2" fill="#000080"/></svg>
+        <span class="icon-label">Contact.vcf</span>
+      </div>
+      <div class="desktop-icon" style="left:100px;top:16px;" ondblclick="openWindow('terminal')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="2" y="4" width="28" height="24" fill="#000" stroke="#808080" stroke-width="2"/><text x="6" y="16" font-size="7" font-family="monospace" fill="#0f0">&gt;_</text><rect x="4" y="20" width="16" height="2" fill="#0f0"/></svg>
+        <span class="icon-label">Terminal</span>
+      </div>
+      <div class="desktop-icon" style="left:100px;top:100px;" ondblclick="openWindow('snake')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" fill="#006400" stroke="#000" stroke-width="1"/><rect x="6" y="14" width="4" height="4" fill="#0f0"/><rect x="10" y="14" width="4" height="4" fill="#0f0"/><rect x="14" y="14" width="4" height="4" fill="#0f0"/><rect x="18" y="14" width="4" height="4" fill="#0f0"/><rect x="18" y="10" width="4" height="4" fill="#0f0"/><rect x="24" y="22" width="4" height="4" fill="#ff0000"/></svg>
+        <span class="icon-label">Snake.exe</span>
+      </div>
+      <div class="desktop-icon" style="left:100px;top:184px;" ondblclick="openWindow('minesweeper')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" fill="#c0c0c0" stroke="#000" stroke-width="1"/><rect x="5" y="5" width="7" height="7" fill="#bdbdbd" stroke="#808080" stroke-width="0.5"/><rect x="13" y="5" width="7" height="7" fill="#bdbdbd" stroke="#808080" stroke-width="0.5"/><rect x="21" y="5" width="7" height="7" fill="#bdbdbd" stroke="#808080" stroke-width="0.5"/><circle cx="16" cy="20" r="5" fill="#000"/><line x1="16" y1="14" x2="16" y2="12" stroke="#000" stroke-width="1.5"/><line x1="11" y1="17" x2="9" y2="15" stroke="#000" stroke-width="1.5"/><line x1="21" y1="17" x2="23" y2="15" stroke="#000" stroke-width="1.5"/></svg>
+        <span class="icon-label">Mines.exe</span>
+      </div>
+      <div class="desktop-icon" style="left:100px;top:268px;" ondblclick="openWindow('photos')">
+        <svg class="icon-img" viewBox="0 0 32 32"><rect x="3" y="6" width="26" height="20" fill="#333" stroke="#000" stroke-width="1"/><circle cx="16" cy="16" r="7" fill="#222" stroke="#666" stroke-width="1.5"/><circle cx="16" cy="16" r="4" fill="#4488cc"/><rect x="11" y="7" width="10" height="3" fill="#444"/><rect x="24" y="8" width="3" height="2" fill="#ff0" opacity="0.8"/></svg>
+        <span class="icon-label">35mm</span>
       </div>
     </div>
-    <div id="terminal">
-      <div class="line">Resume Terminal for: <span class="underline flash">Dawid Perkowski</span></div>
-      <div class="line">Type a command below:</div>
-      <div class="line">Resume can be downloaded via 'rsme -dwnld' command</div>
-      <br>
-      <div id="output"></div>      <div class="input-line">
-        <span class="prompt">&gt;</span>
-        <input type="text" id="commandInput" autofocus aria-label="Terminal command input" placeholder="Type a command...">
-        <div id="suggestions" role="listbox" aria-label="Command suggestions"></div>
+
+    <!-- Windows -->
+    <!-- About Window -->
+    <div class="app-window" id="win-about" style="top:60px;left:200px;width:460px;height:340px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-about')">
+        <span class="window-title">About.exe</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('about')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('about')">□</div>
+          <div class="window-btn" onclick="closeWindow('about')">×</div>
+        </div>
+      </div>
+      <div class="window-body">
+        <h2>Dawid Perkowski</h2>
+        <p>Founder. Builder. Engineer.</p>
+        <p>I build software products from zero. I've shipped code across multiple industries, and now I'm focused on building my own things.</p>
+        <p>Background: Veteran, engineering manager, startup founder. I've led teams, written production code, and launched products from scratch.</p>
+        <p>I think in systems, ship fast, and care about craft. I'm most alive when I'm building something new.</p>
       </div>
     </div>
-  </div>  <script>
-    // Boot sequence variables
+
+    <!-- Startup Window -->
+    <div class="app-window" id="win-startup" style="top:80px;left:240px;width:480px;height:360px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-startup')">
+        <span class="window-title">Startup</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('startup')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('startup')">□</div>
+          <div class="window-btn" onclick="closeWindow('startup')">×</div>
+        </div>
+      </div>
+      <div class="window-body">
+        <h2>What I'm Building</h2>
+        <h3>WedWallet</h3>
+        <p>A fintech product for couples planning weddings. Budgeting, payments, and vendor management in one place.</p>
+        <p>I'm the founding engineer. Built the platform from zero. APIs, frontend, cloud infra, CI/CD, the works.</p>
+        <h3>Why</h3>
+        <p>Wedding planning is a $70B industry running on spreadsheets and Venmo. There's a real product gap and I wanted to build the thing that should exist.</p>
+      </div>
+    </div>
+
+    <!-- Build Log Window -->
+    <div class="app-window" id="win-buildlog" style="top:100px;left:280px;width:460px;height:340px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-buildlog')">
+        <span class="window-title">Build Log</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('buildlog')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('buildlog')">□</div>
+          <div class="window-btn" onclick="closeWindow('buildlog')">×</div>
+        </div>
+      </div>
+      <div class="window-body">
+        <h2>Build Log</h2>
+        <ul>
+          <li><strong>Now:</strong> Shipping WedWallet v1 features. Vendor payments, budget tracking, couple sync.</li>
+          <li><strong>Recently:</strong> Built DpOS (this site) as a personal OS concept. Experimenting with retro UI as personal branding.</li>
+          <li><strong>Side quests:</strong> <a href="#" onclick="event.preventDefault();openWindow('photos')" style="color:#000080;">Film photography (35mm)</a>, rock climbing, tinkering with car tech.</li>
+        </ul>
+        <p style="color:#808080;font-size:11px;margin-top:12px;">Last updated: 2025</p>
+      </div>
+    </div>
+
+    <!-- Principles Window -->
+    <div class="app-window" id="win-principles" style="top:70px;left:260px;width:460px;height:380px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-principles')">
+        <span class="window-title">Principles.txt</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('principles')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('principles')">□</div>
+          <div class="window-btn" onclick="closeWindow('principles')">×</div>
+        </div>
+      </div>
+      <div class="window-body" style="font-family:'Courier New',monospace;font-size:12px;white-space:pre-wrap;">// principles.txt
+// how I think about building
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.
+
+Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. Etiam tempor. Ut ullamcorper, ligula ut dictum pharetra, nisi nunc fringilla magna, in commodo elit erat nec risus.</div>
+    </div>
+
+    <!-- Archive Window -->
+    <div class="app-window" id="win-archive" style="top:90px;left:220px;width:500px;height:380px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-archive')">
+        <span class="window-title">Archive</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('archive')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('archive')">□</div>
+          <div class="window-btn" onclick="closeWindow('archive')">×</div>
+        </div>
+      </div>
+      <div class="window-body">
+        <h2>Archive</h2>
+        <h3>Engineering Management</h3>
+        <p>Leading multiple engineering teams building secure systems at scale.</p>
+        <h3>Founding Engineer, WedWallet</h3>
+        <p>Built a fintech startup from zero. Full-stack architecture, CI/CD, cloud infra, product development.</p>
+        <h3>Software Engineer</h3>
+        <p>Built 20+ features for large-scale web apps. Upgraded legacy systems, led migrations, built microservices and APIs.</p>
+        <p style="margin-top:12px;color:#808080;font-size:11px;">This is history, not a pitch. I build things now.</p>
+      </div>
+    </div>
+
+    <!-- Contact Window -->
+    <div class="app-window" id="win-contact" style="top:110px;left:300px;width:360px;height:240px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-contact')">
+        <span class="window-title">Contact.vcf</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('contact')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('contact')">□</div>
+          <div class="window-btn" onclick="closeWindow('contact')">×</div>
+        </div>
+      </div>
+      <div class="window-body">
+        <h2>Contact</h2>
+        <p><strong>LinkedIn:</strong> <a href="https://www.linkedin.com/in/dawid-perkowski" target="_blank">linkedin.com/in/dawid-perkowski</a></p>
+        <p style="margin-top:12px;color:#808080;font-size:11px;">Best way to reach me: LinkedIn DM.</p>
+      </div>
+    </div>
+
+    <!-- Photos Window -->
+    <div class="app-window" id="win-photos" style="top:40px;left:140px;width:520px;height:420px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-photos')">
+        <span class="window-title">35mm</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('photos')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('photos')">□</div>
+          <div class="window-btn" onclick="closeWindow('photos')">×</div>
+        </div>
+      </div>
+      <div class="window-body" style="background:#1a1a1a;color:#ccc;">
+        <h2 style="color:#fff;">35mm Film Photography</h2>
+        <p style="color:#999;font-size:11px;margin-bottom:12px;">Shot on various analog cameras. All photos are in the <code style="background:#333;padding:1px 4px;">photos/</code> folder.</p>
+        <div id="photoGallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
+        <p id="noPhotos" style="color:#666;font-style:italic;margin-top:16px;text-align:center;">Drop your 35mm scans into the photos/ folder and they'll show up here.</p>
+      </div>
+    </div>
+
+    <!-- Snake Window -->
+    <div class="app-window" id="win-snake" style="top:50px;left:180px;width:400px;height:440px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-snake')">
+        <span class="window-title">Snake.exe</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('snake')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('snake')">□</div>
+          <div class="window-btn" onclick="closeWindow('snake');stopSnake()">×</div>
+        </div>
+      </div>
+      <div class="window-body" style="background:#000;padding:4px;display:flex;flex-direction:column;align-items:center;">
+        <div style="color:#0f0;font-family:monospace;font-size:12px;margin:4px 0;" id="snakeScore">Score: 0</div>
+        <canvas id="snakeCanvas" width="300" height="300" style="border:1px solid #0f0;background:#001a00;"></canvas>
+        <div style="color:#0f0;font-family:monospace;font-size:11px;margin-top:6px;text-align:center;">Arrow keys to move · Space to pause<br>Click canvas to start</div>
+      </div>
+    </div>
+
+    <!-- Minesweeper Window -->
+    <div class="app-window" id="win-minesweeper" style="top:60px;left:220px;width:320px;height:420px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-minesweeper')">
+        <span class="window-title">Mines.exe</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('minesweeper')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('minesweeper')">□</div>
+          <div class="window-btn" onclick="closeWindow('minesweeper')">×</div>
+        </div>
+      </div>
+      <div class="window-body" style="background:#c0c0c0;padding:8px;display:flex;flex-direction:column;align-items:center;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;width:100%;justify-content:space-between;">
+          <div id="mineCount" style="background:#000;color:#f00;font-family:monospace;font-size:16px;padding:2px 6px;min-width:40px;text-align:center;">10</div>
+          <button id="mineReset" onclick="initMinesweeper()" style="font-size:16px;width:28px;height:28px;cursor:pointer;border:2px outset #fff;background:#c0c0c0;">🙂</button>
+          <div id="mineTimer" style="background:#000;color:#f00;font-family:monospace;font-size:16px;padding:2px 6px;min-width:40px;text-align:center;">0</div>
+        </div>
+        <div id="mineGrid" style="display:grid;grid-template-columns:repeat(9,28px);gap:1px;background:#808080;border:2px inset #808080;padding:2px;"></div>
+        <div style="font-size:10px;color:#808080;margin-top:6px;">Left click: reveal · Right click: flag</div>
+      </div>
+    </div>
+
+    <!-- Terminal Window -->
+    <div class="app-window open" id="win-terminal" style="top:40px;left:160px;width:560px;height:400px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-terminal')">
+        <span class="window-title">Terminal</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('terminal')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('terminal')">□</div>
+          <div class="window-btn" onclick="closeWindow('terminal')">×</div>
+        </div>
+      </div>
+      <div class="window-body terminal-body" id="terminalBody" onclick="focusTerminal()">
+        <div class="line">DpOS Terminal v2.0</div>
+        <div class="line">Type <span style="color:#00ffff">help</span> for available commands.</div>
+        <br>
+        <div id="output"></div>
+        <div class="input-line">
+          <span class="prompt">&gt;</span>
+          <input type="text" id="commandInput" autofocus aria-label="Terminal command input" placeholder="Type a command...">
+        </div>
+      </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div id="taskbar">
+      <div id="startBtn" onclick="toggleStartMenu()">
+        <svg class="start-icon" viewBox="0 0 16 16" width="16" height="16"><rect x="2" y="6" width="12" height="9" rx="3" fill="#d4a44c"/><circle cx="8" cy="5" r="5" fill="#e8be6a"/><path d="M3,3 Q4,0 5.5,2" fill="#e8be6a" stroke="#b8893a" stroke-width="0.3"/><path d="M13,3 Q12,0 10.5,2" fill="#e8be6a" stroke="#b8893a" stroke-width="0.3"/><circle cx="6" cy="5" r="1.2" fill="#2a2a2a"/><circle cx="10" cy="5" r="1.2" fill="#2a2a2a"/><circle cx="6" cy="4.7" r="0.4" fill="#fff"/><circle cx="10" cy="4.7" r="0.4" fill="#fff"/><ellipse cx="8" cy="6.5" rx="0.8" ry="0.5" fill="#ffaaaa"/><path d="M7.2,7.2 Q8,8 8.8,7.2" fill="none" stroke="#555" stroke-width="0.4"/><line x1="3" y1="5.5" x2="1" y2="5" stroke="#b8893a" stroke-width="0.3"/><line x1="3" y1="6.5" x2="1" y2="6.8" stroke="#b8893a" stroke-width="0.3"/><line x1="13" y1="5.5" x2="15" y2="5" stroke="#b8893a" stroke-width="0.3"/><line x1="13" y1="6.5" x2="15" y2="6.8" stroke="#b8893a" stroke-width="0.3"/><ellipse cx="5" cy="12" rx="1.5" ry="1" fill="#c89840"/><ellipse cx="11" cy="12" rx="1.5" ry="1" fill="#c89840"/></svg>
+        <span>DpOS</span>
+      </div>
+      <div id="taskbarWindows"></div>
+      <div id="taskbarClock"></div>
+    </div>
+
+    <!-- Start Menu -->
+    <div id="startMenu">
+      <div class="start-menu-sidebar"><span>DpOS</span></div>
+      <div class="start-menu-items">
+        <div class="start-menu-item" onclick="openWindow('about')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="2" y="1" width="12" height="14" fill="#fff" stroke="#000" stroke-width="0.5"/><rect x="3" y="3" width="10" height="2" fill="#000080"/></svg>
+          About Dawid
+        </div>
+        <div class="start-menu-item" onclick="openWindow('startup')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><polygon points="8,1 15,8 1,8" fill="#ff8800"/><rect x="3" y="8" width="10" height="7" fill="#ffff00" stroke="#000" stroke-width="0.5"/></svg>
+          Startup
+        </div>
+        <div class="start-menu-item" onclick="openWindow('buildlog')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="2" y="1" width="12" height="14" fill="#ffffcc" stroke="#000" stroke-width="0.5"/><rect x="3" y="3" width="6" height="1" fill="#000"/><rect x="3" y="5" width="9" height="1" fill="#808080"/></svg>
+          Build Log
+        </div>
+        <div class="start-menu-item" onclick="openWindow('principles')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="2" y="1" width="12" height="14" fill="#fff" stroke="#000" stroke-width="0.5"/><text x="4" y="10" font-size="5" font-family="monospace">TXT</text></svg>
+          Principles
+        </div>
+        <div class="start-menu-item" onclick="openWindow('archive')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="1" y="5" width="14" height="10" fill="#c0c000" stroke="#000" stroke-width="0.5"/><rect x="1" y="3" width="7" height="3" fill="#c0c000" stroke="#000" stroke-width="0.5"/></svg>
+          Archive
+        </div>
+        <div class="start-menu-separator"></div>
+        <div class="start-menu-item" onclick="openWindow('contact')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="10" fill="#fff" stroke="#000" stroke-width="0.5"/><polygon points="1,3 8,9 15,3" fill="none" stroke="#000080" stroke-width="0.5"/></svg>
+          Contact
+        </div>
+        <div class="start-menu-item" onclick="openWindow('terminal')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="12" fill="#000" stroke="#808080" stroke-width="1"/><text x="3" y="10" font-size="5" font-family="monospace" fill="#0f0">&gt;_</text></svg>
+          Terminal
+        </div>
+        <div class="start-menu-separator"></div>
+        <div class="start-menu-item" onclick="openWindow('snake')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" fill="#006400" stroke="#000" stroke-width="0.5"/><rect x="3" y="7" width="3" height="3" fill="#0f0"/><rect x="6" y="7" width="3" height="3" fill="#0f0"/><rect x="9" y="7" width="3" height="3" fill="#0f0"/></svg>
+          Snake.exe
+        </div>
+        <div class="start-menu-item" onclick="openWindow('minesweeper')">
+          <svg class="menu-icon" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" fill="#c0c0c0" stroke="#000" stroke-width="0.5"/><circle cx="8" cy="8" r="3" fill="#000"/><line x1="8" y1="4" x2="8" y2="2" stroke="#000" stroke-width="1"/></svg>
+          Mines.exe
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === LOGIN STATE ===
+    let visitorName = 'visitor';
+
+    // === BOOT SEQUENCE (preserved from original) ===
+    function getBootMessages() {
+      return [
+        { text: "DpOS BOOT SEQUENCE INITIATED", type: "boot-header", delay: 80 },
+        { text: "████████████████████████████████", type: "boot-system", delay: 40 },
+        { text: "DpOS v2.0 Personal Operating System", type: "boot-system", delay: 80 },
+        { text: "Copyright (c) 2025 Dawid Perkowski", type: "boot-system", delay: 80 },
+        { text: "████████████████████████████████", type: "boot-system", delay: 40 },
+        { text: "", type: "", delay: 150 },
+        { text: "Initializing system components...", type: "boot-loading", delay: 200 },
+        { text: "Loading BIOS..................[OK]", type: "boot-ok", delay: 300 },
+        { text: "Checking memory integrity.....[OK]", type: "boot-ok", delay: 250 },
+        { text: "Loading device drivers........[OK]", type: "boot-ok", delay: 300 },
+        { text: "Mounting filesystem...........[OK]", type: "boot-ok", delay: 250 },
+        { text: "", type: "", delay: 200 },
+        { text: ">>> LOADING PERSONAL ENVIRONMENT <<<", type: "boot-warning", delay: 400 },
+        { text: "Authenticating user...", type: "boot-loading", delay: 600 },
+        { text: "System ready. Awaiting login.", type: "boot-ok", delay: 400 },
+        { text: "", type: "", delay: 200 },
+        { text: "Starting DpOS desktop...", type: "boot-complete", delay: 600 }
+      ];
+    }
+
     let bootIndex = 0;
-    let bootComplete = false;
-    
-    // Boot sequence messages
-    const bootMessages = [
-      { text: "SYSTEM BOOT SEQUENCE INITIATED", type: "boot-header", delay: 100 },
-      { text: "█████████████████████████████████", type: "boot-system", delay: 50 },
-      { text: "RESUME TERMINAL OS v2.0", type: "boot-system", delay: 100 },
-      { text: "Copyright (c) 2024 Dawid Perkowski", type: "boot-system", delay: 100 },
-      { text: "█████████████████████████████████", type: "boot-system", delay: 50 },
-      { text: "", type: "", delay: 200 },
-      { text: "Initializing system components...", type: "boot-loading", delay: 300 },
-      { text: "Loading BIOS.................[OK]", type: "boot-ok", delay: 400 },
-      { text: "Checking memory integrity....[OK]", type: "boot-ok", delay: 300 },
-      { text: "Loading device drivers.......[OK]", type: "boot-ok", delay: 400 },
-      { text: "", type: "", delay: 300 },
-      { text: ">>> ACCESSING MAINFRAME DATABASE <<<", type: "boot-warning", delay: 500 },
-      { text: "Authentication required...", type: "boot-loading", delay: 800 },
-      { text: "Bypassing security protocols...", type: "boot-warning", delay: 1000 },
-      { text: "Access granted. Welcome, user.", type: "boot-ok", delay: 500 },
-      { text: "", type: "", delay: 300 },
-      { text: "Loading resume database.......", type: "boot-ok", delay: 400 },
-      { text: "", type: "", delay: 500 },
-      { text: "BOOT SEQUENCE COMPLETE", type: "boot-complete", delay: 800 },
-      { text: "Starting Resume Terminal...", type: "boot-complete", delay: 1000 }
-    ];
-    
+    let bootMessages = [];
+
     function typeBootMessage(message, callback) {
       const bootContent = document.getElementById('bootContent');
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `boot-line ${message.type}`;
-      
-      if (message.text === "") {
-        messageDiv.innerHTML = "&nbsp;";
-        bootContent.appendChild(messageDiv);
-        setTimeout(callback, message.delay);
-        return;
-      }
-      
-      bootContent.appendChild(messageDiv);
-      
-      let charIndex = 0;
-      function typeChar() {
-        if (charIndex < message.text.length) {
-          messageDiv.textContent = message.text.substring(0, charIndex + 1) + (charIndex < message.text.length - 1 ? '_' : '');
-          charIndex++;
-          setTimeout(typeChar, 30);
-        } else {
-          messageDiv.textContent = message.text;
-          setTimeout(callback, message.delay);
-        }
-      }
-      
-      typeChar();
+      const div = document.createElement('div');
+      div.className = 'boot-line ' + message.type;
+      if (message.text === "") { div.innerHTML = "&nbsp;"; bootContent.appendChild(div); setTimeout(callback, message.delay); return; }
+      bootContent.appendChild(div);
+      let i = 0;
+      (function typeChar() {
+        if (i < message.text.length) { div.textContent = message.text.substring(0, i + 1); i++; setTimeout(typeChar, 20); }
+        else { setTimeout(callback, message.delay); }
+      })();
     }
-    
+
     function runBootSequence() {
+      if (bootMessages.length === 0) bootMessages = getBootMessages();
       if (bootIndex < bootMessages.length) {
-        typeBootMessage(bootMessages[bootIndex], () => {
-          bootIndex++;
-          runBootSequence();
-        });
+        typeBootMessage(bootMessages[bootIndex], () => { bootIndex++; runBootSequence(); });
       } else {
-        // Boot sequence complete, fade out boot screen
         setTimeout(() => {
           const bootScreen = document.getElementById('bootScreen');
-          const mainScreen = document.getElementById('main');
-          
-          bootScreen.classList.add('fade-out');
-          
+          bootScreen.classList.add('shutoff');
           setTimeout(() => {
             bootScreen.style.display = 'none';
-            mainScreen.classList.add('show');
-            bootComplete = true;
-            
-            // Initialize the main terminal after boot
-            initializeTerminal();
-          }, 1000);
-        }, 500);
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginInput').focus();
+          }, 500);
+        }, 300);
       }
     }
-    
-    function initializeTerminal() {
-      // Auto-focus on terminal input
-      document.getElementById('commandInput').focus();
-      
 
+    // === WINDOW MANAGEMENT ===
+    const windowState = {};
+    const windowOrder = [];
+    let dragState = null;
+    let zCounter = 100;
+
+    function openWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (!win) return;
+      win.classList.add('open');
+      win.classList.remove('minimized');
+      bringToFront(id);
+      windowState[id] = 'open';
+      updateTaskbar();
+      closeStartMenu();
+      if (id === 'terminal') document.getElementById('commandInput').focus();
     }
-    
-    let pendingTimeouts = [];
-    let currentLine = null;
-    let flushCallback = null;
-    let colorMode = true;
-    let selectedSuggestion = -1;
-    let isLoading = false;
-    
-    function clearAllTimeouts() {
-      pendingTimeouts.forEach(id => clearTimeout(id));
-      pendingTimeouts = [];
+
+    function closeWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (!win) return;
+      win.classList.remove('open');
+      delete windowState[id];
+      const idx = windowOrder.indexOf(id);
+      if (idx > -1) windowOrder.splice(idx, 1);
+      updateTaskbar();
     }
-    
-    // Enhanced command suggestions and auto-complete
-    const allCommands = [
-      'help', 'rsme -fl', 'rsme -dwnld', 'rsme -hd', 'rsme -sk', 'rsme -ex', 
-      'rsme -ce', 'rsme -ad', 'rsme -ct', 'search', 'qr', 'export', 'man', 
-      'compare', 'cl', 'clear', 'pokemon', 'terminal', 'cmd', 'mac', 'rr'
-    ];
-    
-    function showSuggestions(input) {
-      const suggestions = document.getElementById('suggestions');
-      const value = input.toLowerCase();
-      
-      if (!value) {
-        suggestions.style.display = 'none';
-        return;
-      }
-      
-      const matches = allCommands.filter(cmd => cmd.toLowerCase().startsWith(value));
-      
-      if (matches.length === 0) {
-        suggestions.style.display = 'none';
-        return;
-      }
-      
-      suggestions.innerHTML = matches.map((cmd, index) => 
-        `<div class="suggestion" data-index="${index}" onclick="selectSuggestion('${cmd}')">${cmd}</div>`
-      ).join('');
-      
-      suggestions.style.display = 'block';
-      selectedSuggestion = -1;
+
+    function minimizeWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (!win) return;
+      win.classList.add('minimized');
+      windowState[id] = 'minimized';
+      updateTaskbar();
     }
-    
-    function selectSuggestion(command) {
-      document.getElementById('commandInput').value = command;
-      document.getElementById('suggestions').style.display = 'none';
-      selectedSuggestion = -1;
-    }
-    
-    function navigateSuggestions(direction) {
-      const suggestions = document.querySelectorAll('.suggestion');
-      if (suggestions.length === 0) return;
-      
-      if (selectedSuggestion >= 0) {
-        suggestions[selectedSuggestion].classList.remove('selected');
-      }
-      
-      selectedSuggestion += direction;
-      if (selectedSuggestion < 0) selectedSuggestion = suggestions.length - 1;
-      if (selectedSuggestion >= suggestions.length) selectedSuggestion = 0;
-      
-      suggestions[selectedSuggestion].classList.add('selected');
-      document.getElementById('commandInput').value = suggestions[selectedSuggestion].textContent;
-    }
-    
-    function showLoading(message = 'Processing...') {
-      isLoading = true;
-      const loadingLine = document.createElement('div');
-      loadingLine.className = 'line loading';
-      loadingLine.textContent = message;
-      document.getElementById('output').appendChild(loadingLine);
-      return loadingLine;
-    }
-    
-    function hideLoading(loadingElement) {
-      isLoading = false;
-      if (loadingElement && loadingElement.parentNode) {
-        loadingElement.parentNode.removeChild(loadingElement);
-      }
-    }
-    
-    function colorizeText(text) {
-      if (!colorMode) return text;
-      
-      return text
-        .replace(/(Dept of Health|WedWallet|ALPHA OMEGA INTEGRATION|UNITED STATES MARINE CORPS)/g, '<span class="company-name">$1</span>')
-        .replace(/(Senior Software Engineering Manager|Founding Engineer|\.NET Software Developer|Sergeant|Corporal)/g, '<span class="job-title">$1</span>')
-        .replace(/(\d{4}\s*–\s*\w+|\w+\s+\d{4}\s*–\s*\w+\s+\d{4}|\w+\.\s+\d{4}\s*–\s*\w+\.\s+\d{4})/g, '<span class="date">$1</span>')
-        .replace(/(Remote|San Francisco, CA|Washington, D\.C\.|Twentynine Palms, CA)/g, '<span class="location">$1</span>')
-        .replace(/(Java|C#|\.NET|Oracle|SQL|MySQL|Go|Python|JavaScript|TypeScript|React|Angular|AWS|Azure)/g, '<span class="skill">$1</span>')
-        .replace(/(SKILLS & QUALIFICATIONS|PROFESSIONAL EXPERIENCE|CERTIFICATIONS|ADDITIONAL INFORMATION)/g, '<span class="section-header">$1</span>')
-        .replace(/(reducing help desk tickets by 30%|troubleshooting time by over 50%|100% pass rate)/g, '<span class="achievement">$1</span>');
-    }    const resumeData = {
-      header: `Dawid Perkowski
-www.linkedin.com/in/dawid-perkowski
 
-Accomplished Engineering Manager and U.S. Marine Corps Veteran with a strong background in leading high performing software teams to deliver scalable, high quality solutions. Proven ability to mentor and guide the professional and technical development of engineers, fostering a culture of continuous improvement and collaboration. Experienced in partnering with product managers to define roadmaps, lead complex technical projects, and improve architectural design.`,
-      
-      skills: `SKILLS & QUALIFICATIONS
+    const windowPrevState = {};
 
-Specialized Proficiencies: Java, C#, .NET Core, Oracle, SQL, MySQL
-Programming & Scripting: Go, Python, JavaScript/TypeScript
-Frameworks & Libraries: .NET (ASP.NET, .NET MVC), Spring Boot, Node.js, React, Next.js, Angular, Blazor, Palantir Foundry
-Databases: PostgreSQL, SQL Server, Appwrite, Supabase
-Cloud & DevOps: AWS, Azure (Cloud Services, DevOps), GitLab, Azure DevOps, Docker, Kafka, Dynatrace, SonarQube
-Languages: Native Bilingual (Polish and English).
-Web Services & APIs: GraphQL, RESTful APIs, SOAP
-Methodologies & Testing: Agile Scrum, TDD (nUnit, xUnit, Moq), Selenium, TestNG`,
-
-      experience: `PROFESSIONAL EXPERIENCE
-Dept of Health (ACF/ORR)								                    Remote
-Senior Software Engineering Manager								September 2024 – Present
-Lead and mentor multiple software technology teams, guiding the professional and technical development of team members through tailored project assignments.
-Collaborate with product managers and key stakeholders to build a strategic roadmap, ensuring proper technical design and documentation for all features.
-Produce and review high quality, maintainable code, and establish coding standards and architectural guidelines to improve and scale application design.
-Build plans for prioritizing technical and resourcing challenges, enhancing team efficiency and aligning development with key business metrics.
-Build and maintain robust infrastructure on AWS, integrating technologies such as Guacamole, Dynatrace, GitLab, and SonarQube.
-Utilize a modern tech stack including .NET, Palantir Foundry, Java, Go, React, Kafka, and Oracle DB to deliver secure, scalable solutions.
-
-WedWallet										San Francisco, CA		
-Founding Engineer										May 2024 – Present
-Spearhead the design and development of a fintech startup from the ground up, implementing modern .NET API standards.
-Architect and build core platform features using .NET Aspire, React, and other cloud-native services.
-Oversee continuous integration and deployment pipelines, ensuring rapid and reliable feature releases.
-Collaborate closely with stakeholders to refine product requirements, deliver proof-of-concepts, and guide product roadmap.
-Implement best practices around security, scalability, and fault tolerance to support the platform's growth trajectory.
-
-ALPHA OMEGA INTEGRATION                                                                                                                                                                   Washington, D.C.
-.NET Software Developer 								 	Jan 2020 - 2024
-Designed and developed over 20 features for two critical Web Applications used by classified government agencies, utilizing .NET, C#, and Oracle SQL.
-Upgraded legacy systems, reducing help desk tickets by 30% and troubleshooting time by over 50%.
-Implemented modern front-end solutions with Angular, HTML, CSS, and Bootstrap, improving user interface and user experience.
-Led a team in transitioning from a legacy version control system to Git DevOps, completing the project in two months.
-Developed microservices and RESTful APIs, focusing on API security and performance optimization.
-Created unit and smoke tests for CI/CD pipelines, ensuring robust deployments.
-Participated in client meetings, providing technical input to enhance software quality and process efficiency.
-UNITED STATES MARINE CORPS						                                       Twentynine Palms, CA
-Sergeant; Quality Assurance Supervisor								Sept. 2018 – Dec. 2019
-Promoted to regulate and supervise over 20 military avionic technicians (ranging from private to corporal) that reported daily for quality verification. Primary supervisor for multiple collateral duties including inventory management and technical risk management. 
-Managed an inventory of $17 million worth of support equipment for repairing and troubleshooting military aircraft
-Supervised and quality inspected 400+ no-fail avionics gear for Bell-Boeing's most advanced aircraft
-Led preparations for large-scale scheduled and unscheduled inspections that resulted in a 100% pass rate
-
-Ensured strict compliance with aviation standards, policies and procedures while maintaining a high degree of efficiency
-Corporal; Project Manager									Mar. 2018 – Sept. 2018
-Various Ranks; Technical Supervisor, Avionics Engineer						Mar. 2015 – Mar. 2018`,
-
-      certifications: `CERTIFICATIONS
-
-Azure Fundamentals AZ-900 
-Azure AI Fundamentals AI-900
-MTA: Software Development Fundamentals
-MSSA Microsoft Software Systems Academy`,
-
-      additional: `ADDITIONAL INFORMATION
-Volunteer work: Firefighter, Exeter Township Fire Station (June 2014 – March 2015); Equestrian volunteer, Cloverleaf Equine Center Nonprofit, Equestrian Therapy for Disabled Children (June 2020 – Present). 
-Interests: Film photography, rock climbing, camping, car technologies, soccer`
-    };
-    
-    // Legacy variables for backward compatibility
-    const resumeHeader = resumeData.header;
-    const resumeSkills = resumeData.skills;
-    const resumeExperience = resumeData.experience;
-    const resumeCertifications = resumeData.certifications;
-    const resumeAdditional = resumeData.additional;    const resumeFull = `${resumeData.header}
-
-${resumeData.skills}
-
-${resumeData.experience}
-
-${resumeData.certifications}
-
-${resumeData.additional}`;
-    
-    // Generate QR Code function
-    function generateQR() {
-      const qrContainer = document.createElement('div');
-      qrContainer.id = 'qrContainer';
-      qrContainer.innerHTML = `
-        <div>
-          ┌─────────────────────────────────┐
-          │█▀▀▀▀▀█ █▀█ █ ▀▄▀ █▀▀▀▀▀█│
-          │█ ███ █ ▄▀█▀▄ █▄█ █ ███ █│
-          │█ ▀▀▀ █ █▄▀ █▀ ▄▀ █ ▀▀▀ █│
-          │▀▀▀▀▀▀▀ █▀█ ▀ █▀█ ▀▀▀▀▀▀▀│
-          │▀█▀ ██▀█▄ ▀▄██▄▀█▀██▀▄▀█ │
-          │ ▄██▄▀▀▄▀▀█▄▀▄█ ▄█▀██▀▄▀ │
-          │█ █▄█ █▄▀▄█▄▀▀▄██▄█▀▄▀▀█ │
-          │▀▀▀▀▀▀▀▀▀ █ ▄▀█▀▀▀█▀▀▀█▀│
-          │█▀▀▀▀▀█ ▀▄ █▄▀█ █ ▀ █▄██ │
-          │█ ███ █ █▀▄▀▄▄▄██▀▀▀█▀▄▀ │
-          │█ ▀▀▀ █ ▄▀█▀▀▄▀█▄▀██▄▀▄█ │
-          │▀▀▀▀▀▀▀ ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀│
-          └─────────────────────────────────┘
-          
-          QR Code for: www.linkedin.com/in/dawid-perkowski
-          Scan to view LinkedIn profile on mobile
-        </div>
-      `;
-      return qrContainer.innerHTML;
-    }    const commands = {
-      "help": function() { return `Available commands:
-help       - List commands
-rsme -fl   - Full resume
-rsme -dwnld- Resume download  
-rsme -hd   - Header
-rsme -sk   - Skills & qualifications
-rsme -ex   - Experience
-rsme -ce   - Certifications
-rsme -ad   - Additional info
-rsme -ct   - Contact info
-search     - Search resume content
-qr         - Generate QR code for LinkedIn
-export     - Export resume in different formats
-man        - Manual pages for commands
-compare    - Show career progression metrics
-pokemon, terminal, cmd, mac - Random Pokémon art
-rr         - Redirect to YouTube in full screen
-cl or clear- Clear terminal
-
-Enhanced features:
-- Use Tab for auto-completion
-- Use Up/Down arrows for command history
-- Add --color flag to toggle colors
-- Type 'man <command>' for detailed help`; },
-
-      "rsme -fl": function(args) { 
-        const content = args && args.includes('--color') ? colorizeText(resumeFull) : resumeFull;
-        return content;
-      },
-      "rsme -hd": function(args) { 
-        const content = args && args.includes('--color') ? colorizeText(resumeData.header) : resumeData.header;
-        return content;
-      },
-      "rsme -sk": function(args) { 
-        const content = args && args.includes('--color') ? colorizeText(resumeData.skills) : resumeData.skills;
-        return content;
-      },
-      "rsme -ex": function(args) { 
-        const content = args && args.includes('--color') ? colorizeText(resumeData.experience) : resumeData.experience;
-        return content;
-      },
-      "rsme -ce": function(args) { 
-        const content = args && args.includes('--color') ? colorizeText(resumeData.certifications) : resumeData.certifications;
-        return content;
-      },
-      "rsme -ad": function(args) { 
-        const content = args && args.includes('--color') ? colorizeText(resumeData.additional) : resumeData.additional;
-        return content;
-      },
-      "rsme -ct": function() { 
-        return colorizeText(`Contact Information:
-LinkedIn: www.linkedin.com/in/dawid-perkowski
-Email: Available upon request
-Location: Remote / Washington D.C. Metro Area`); 
-      },
-      
-      "search": function(args) {
-        if (!args || args.trim() === '') {
-          return `<span class="error">Usage: search <term></span>
-Examples:
-  search java     - Find Java-related content
-  search manager  - Find management experience
-  search aws      - Find AWS-related skills`;
+    function maximizeWindow(id) {
+      const win = document.getElementById('win-' + id);
+      if (!win) return;
+      if (win.classList.contains('maximized')) {
+        // Restore
+        win.classList.remove('maximized');
+        if (windowPrevState[id]) {
+          win.style.top = windowPrevState[id].top;
+          win.style.left = windowPrevState[id].left;
+          win.style.width = windowPrevState[id].width;
+          win.style.height = windowPrevState[id].height;
         }
-        
-        const searchTerm = args.toLowerCase();
-        const results = [];
-        const fullText = resumeFull.toLowerCase();
-        
-        Object.entries(resumeData).forEach(([section, content]) => {
-          if (content.toLowerCase().includes(searchTerm)) {
-            const lines = content.split('\n');
-            lines.forEach((line, index) => {
-              if (line.toLowerCase().includes(searchTerm)) {
-                results.push(`[${section.toUpperCase()}] ${line.trim()}`);
-              }
-            });
-          }
-        });
-        
-        if (results.length === 0) {
-          return `<span class="warning">No results found for "${args}"</span>`;
-        }
-        
-        return `<span class="success">Found ${results.length} matches for "${args}":</span>\n\n` + 
-               results.map(result => colorizeText(result)).join('\n');
-      },
-      
-      "qr": function() {
-        return generateQR();
-      },
-      
-      "export": function(args) {
-        const format = args && args.trim() || 'txt';
-        
-        switch(format.toLowerCase()) {
-          case 'json':
-            return `<span class="success">Exporting to JSON format:</span>\n\n` + 
-                   JSON.stringify(resumeData, null, 2);
-          case 'xml':
-            return `<span class="success">Exporting to XML format:</span>\n\n` +
-                   `<?xml version="1.0" encoding="UTF-8"?>
-<resume>
-  <header>${resumeData.header.replace(/\n/g, '\\n')}</header>
-  <skills>${resumeData.skills.replace(/\n/g, '\\n')}</skills>
-  <experience>${resumeData.experience.replace(/\n/g, '\\n')}</experience>
-  <certifications>${resumeData.certifications.replace(/\n/g, '\\n')}</certifications>
-  <additional>${resumeData.additional.replace(/\n/g, '\\n')}</additional>
-</resume>`;
-          case 'txt':
-          default:
-            return `<span class="success">Exporting to Plain Text format:</span>\n\n` + resumeFull;
-        }
-      },
-      
-      "man": function(args) {
-        if (!args) {
-          return `Manual pages available for:
-${allCommands.join(', ')}
+      } else {
+        // Save current position and maximize
+        windowPrevState[id] = { top: win.style.top, left: win.style.left, width: win.style.width, height: win.style.height };
+        win.classList.add('maximized');
+      }
+    }
 
-Usage: man <command>
-Example: man search`;
-        }
-        
-        const manPages = {
-          'help': 'HELP(1) - Display available commands and usage information',
-          'rsme': 'RSME(1) - Resume display commands with various flags (-fl, -hd, -sk, -ex, -ce, -ad, -ct)',
-          'search': 'SEARCH(1) - Search through resume content\nUsage: search <term>\nSearches all sections for the specified term',
-          'qr': 'QR(1) - Generate QR code for LinkedIn profile\nDisplays ASCII QR code for easy mobile access',
-          'export': 'EXPORT(1) - Export resume in different formats\nUsage: export [json|xml|txt]\nSupported formats: JSON, XML, Plain Text',
-          'compare': 'COMPARE(1) - Show career progression and metrics\nDisplays before/after statistics and growth metrics',
-          'cl': 'CLEAR(1) - Clear terminal screen\nAliases: clear'
+    function bringToFront(id) {
+      const win = document.getElementById('win-' + id);
+      if (!win) return;
+      zCounter++;
+      win.style.zIndex = zCounter;
+      const idx = windowOrder.indexOf(id);
+      if (idx > -1) windowOrder.splice(idx, 1);
+      windowOrder.push(id);
+      // Update titlebar active states
+      document.querySelectorAll('.window-titlebar').forEach(tb => tb.classList.add('inactive'));
+      win.querySelector('.window-titlebar').classList.remove('inactive');
+      updateTaskbar();
+    }
+
+    function updateTaskbar() {
+      const container = document.getElementById('taskbarWindows');
+      container.innerHTML = '';
+      document.querySelectorAll('.app-window.open').forEach(win => {
+        const id = win.id.replace('win-', '');
+        const title = win.querySelector('.window-title').textContent;
+        const item = document.createElement('div');
+        item.className = 'taskbar-item' + (windowOrder[windowOrder.length - 1] === id && windowState[id] !== 'minimized' ? ' active' : '');
+        item.textContent = title;
+        item.onclick = () => {
+          if (windowState[id] === 'minimized') { openWindow(id); }
+          else if (windowOrder[windowOrder.length - 1] === id) { minimizeWindow(id); }
+          else { bringToFront(id); win.classList.remove('minimized'); windowState[id] = 'open'; }
         };
-        
-        const cmd = args.split(' ')[0].toLowerCase();
-        return manPages[cmd] || `<span class="error">No manual entry for ${args}</span>`;
-      },
-      
-      "compare": function() {
-        return colorizeText(`<span class="section-header">CAREER PROGRESSION METRICS</span>
+        container.appendChild(item);
+      });
+    }
 
-<span class="achievement">Leadership Growth:</span>
-2018: Individual contributor (Marine Corps technician)
-2020: Team lead (Git migration project leader)
-2024: Engineering Manager (Leading multiple teams)
+    // === DRAGGING ===
+    function startDrag(e, winId) {
+      if (e.target.classList.contains('window-btn')) return;
+      const win = document.getElementById(winId);
+      bringToFront(winId.replace('win-', ''));
+      // Don't drag on mobile or when maximized
+      if (window.innerWidth <= 768) return;
+      if (win.classList.contains('maximized')) return;
+      dragState = { win, startX: e.clientX, startY: e.clientY, origLeft: win.offsetLeft, origTop: win.offsetTop };
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', stopDrag);
+      e.preventDefault();
+    }
+    function onDrag(e) {
+      if (!dragState) return;
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+      dragState.win.style.left = (dragState.origLeft + dx) + 'px';
+      dragState.win.style.top = (dragState.origTop + dy) + 'px';
+    }
+    function stopDrag() { dragState = null; document.removeEventListener('mousemove', onDrag); document.removeEventListener('mouseup', stopDrag); }
 
-<span class="achievement">Technical Impact:</span>
-• Help desk tickets: <span class="achievement">Reduced by 30%</span>
-• Troubleshooting time: <span class="achievement">Reduced by 50%</span>
-• System reliability: <span class="achievement">100% inspection pass rate</span>
-• Team size managed: <span class="achievement">20+ technicians</span>
+    // === ICON DRAGGING ===
+    let iconDragState = null;
+    let iconDragMoved = false;
 
-<span class="achievement">Technology Evolution:</span>
-2018-2019: Military avionic systems, hardware focus
-2020-2024: .NET development, microservices, cloud migration
-2024-Present: Full-stack leadership, AI integration, fintech startup
+    document.querySelectorAll('.desktop-icon').forEach(icon => {
+      icon.addEventListener('mousedown', (e) => {
+        if (window.innerWidth <= 768) return;
+        iconDragMoved = false;
+        iconDragState = { icon, startX: e.clientX, startY: e.clientY, origLeft: icon.offsetLeft, origTop: icon.offsetTop };
+        document.addEventListener('mousemove', onIconDrag);
+        document.addEventListener('mouseup', stopIconDrag);
+        e.preventDefault();
+      });
+    });
 
-<span class="achievement">Key Transformations:</span>
-• From individual contributor → Engineering Manager
-• From hardware systems → Cloud-native solutions  
-• From government/defense → Healthcare + Fintech
-• From single project → Multiple team coordination`);
-      },      "pokemon": function() {
-        const pokemonArts = [
-          `                          .--.             .---.
-                      .---|__|            .-.     |~~~|
-                   .--|===|--|_           |_|     |~~~|--.
-                   |  |===|  |'\\     _,===/_\\\\    |   |  |
-                   |%%|   |  |.'\\    \\   |  ~~|   |   |  |
-                   |%%|   |  |\\.'\    \\  |   |   |   |  |
-                   |  |   |  | \\  \\    \\ |   |   |   |  |
-                   |  |   |__|  \\  \\    \\|___|   |   |__|
-                   |  |===|--|   \\  \\    |   |   |===|--|
-                   ^--^---'--^    \\  \\   ^---^   ^---'--^
-                      |  |  |      \\  \\  |  |  |      Pikachu`,
-          `                    ___-------___
-                         _-~~             ~~-_
-                      _-~                    /~-_
-             /^\\\\__/^\\\\         /~  \\\\                   /~  \\\\
-           /|  O|| O|        /      \\\\_______________/        \\\\
-          | |___||__|      /       /                \\\\          \\\\
-          |          \\\\    /      /                    \\\\          \\\\
-          |   (_______) /______/                        \\\\_________ \\\\
-          |         / /         \\\\                      /            \\\\
-           \\\\         \\\\^\\\\\\\\         \\\\                  /               \\\\     /
-             \\\\         ||           \\\\______________/      _-_       //\\\\__//
-               \\\\       ||------_-~~-_ ------------- \\\\ --/~   ~\\\\    || __/
-                 ~-----||====/~     |==================|       |/~~~~~
-                  (_(__/  ./     /                    \\\\_\\\\      \\\\.
-                         (_(___/                         \\\\_____)_)
-                         Charmander`
-        ];
-        return pokemonArts[Math.floor(Math.random() * pokemonArts.length)];
+    function onIconDrag(e) {
+      if (!iconDragState) return;
+      const dx = e.clientX - iconDragState.startX;
+      const dy = e.clientY - iconDragState.startY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) iconDragMoved = true;
+      iconDragState.icon.style.left = (iconDragState.origLeft + dx) + 'px';
+      iconDragState.icon.style.top = (iconDragState.origTop + dy) + 'px';
+    }
+
+    function stopIconDrag() {
+      iconDragState = null;
+      document.removeEventListener('mousemove', onIconDrag);
+      document.removeEventListener('mouseup', stopIconDrag);
+    }
+
+    // Prevent dblclick from firing after drag
+    document.querySelectorAll('.desktop-icon').forEach(icon => {
+      const origDblclick = icon.getAttribute('ondblclick');
+      icon.removeAttribute('ondblclick');
+      icon.addEventListener('dblclick', () => { if (!iconDragMoved) { eval(origDblclick); } });
+    });
+
+    // === START MENU ===
+    function toggleStartMenu() {
+      const menu = document.getElementById('startMenu');
+      const btn = document.getElementById('startBtn');
+      menu.classList.toggle('show');
+      btn.classList.toggle('active');
+    }
+    function closeStartMenu() {
+      document.getElementById('startMenu').classList.remove('show');
+      document.getElementById('startBtn').classList.remove('active');
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#startMenu') && !e.target.closest('#startBtn')) closeStartMenu();
+    });
+
+    // === CLOCK ===
+    function updateClock() {
+      const now = new Date();
+      const h = now.getHours(); const m = now.getMinutes();
+      document.getElementById('taskbarClock').textContent = (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m + (h >= 12 ? ' PM' : ' AM');
+    }
+
+    // === TERMINAL (preserved & adapted) ===
+    function focusTerminal() { document.getElementById('commandInput').focus(); }
+
+    const terminalCommands = {
+      help: () => `Available commands:
+  help        List commands
+  about       Who I am
+  startup     What I'm building
+  now         Current work & focus
+  principles  How I think
+  archive     Past work
+  contact     Where to find me
+  clear       Clear terminal`,
+
+      about: () => {
+        openWindow('about');
+        return 'Opening About.exe...';
       },
-      
-      "rsme -dwnld": function() {
-        try {
-          window.open("Dawid_Perkowski_Resume.pdf", "_blank");
-          return "<span class='success'>Opening resume PDF in a new window...</span>";
-        } catch (error) {
-          return "<span class='error'>Error: Could not open PDF. Please check if the file exists.</span>";
-        }
+
+      startup: () => {
+        openWindow('startup');
+        return 'Opening Startup...';
       },
-      
-      "rr": function() {
-        try {
-          const url = "https://www.youtube.com/watch?v=uHgt8giw1LY";
-          const newWin = window.open(url, "_blank", "toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
-          if (newWin) {
-            newWin.focus();
-            if (newWin.document.documentElement.requestFullscreen) {
-              newWin.document.documentElement.requestFullscreen();
-            }
-          }
-          return "<span class='success'>Opening Rick Roll... 🎵</span>";
-        } catch (error) {
-          return "<span class='error'>Error: Could not open external link.</span>";
-        }
+
+      now: () => `// Current focus 2025
+
+Building WedWallet (fintech for couples).
+Leading engineering teams.
+Shipping code daily. Thinking about product.
+
+Side: film photography (35mm), climbing, car tech.`,
+
+      principles: () => {
+        openWindow('principles');
+        return 'Opening Principles.txt...';
       },
-      
-      "cl": function() { 
-        clearAllTimeouts(); 
-        document.getElementById('output').innerHTML = ''; 
-        return ""; 
+
+      archive: () => {
+        openWindow('archive');
+        return 'Opening Archive...';
       },
-      "clear": function() { 
-        clearAllTimeouts(); 
-        document.getElementById('output').innerHTML = ''; 
-        return ""; 
+
+      contact: () => {
+        openWindow('contact');
+        return 'Opening Contact.vcf...';
       },
-      
-      "color": function(args) {
-        if (args === 'off') {
-          colorMode = false;
-          return "<span class='warning'>Color mode disabled</span>";
-        } else if (args === 'on') {
-          colorMode = true;
-          return "<span class='success'>Color mode enabled</span>";
-        } else {
-          colorMode = !colorMode;
-          return colorMode ? 
-            "<span class='success'>Color mode enabled</span>" : 
-            "<span class='warning'>Color mode disabled</span>";
-        }
-      }
-    };    // Command aliases
-    commands.terminal = commands.pokemon;
-    commands.cmd = commands.pokemon;
-    commands.mac = commands.pokemon;
-    
-    const outputDiv = document.getElementById('output');
-    const terminalElem = document.getElementById('terminal');
-    const commandInput = document.getElementById('commandInput');
-    const suggestionsDiv = document.getElementById('suggestions');
+
+      clear: () => { document.getElementById('output').innerHTML = ''; return ''; }
+    };
+
     let commandHistory = [];
     let historyIndex = -1;
-    
-    function typeLine(text, callback) {
-      const lineElem = document.createElement('div');
-      lineElem.className = 'line';
-      lineElem.innerHTML = text; // Use innerHTML to support HTML tags for colors
-      outputDiv.appendChild(lineElem);
-      
-      if (colorMode) {
-        // Apply typing animation with colors
-        let i = 0;
-        const originalHTML = lineElem.innerHTML;
-        lineElem.innerHTML = '';
-        currentLine = { lineElem, text: originalHTML };
-        flushCallback = callback;
-        
-        function typeChar() {
-          if (i < originalHTML.length) {
-            lineElem.innerHTML = originalHTML.substring(0, i + 1);
-            i++;
-            let t = setTimeout(typeChar, 10);
-            pendingTimeouts.push(t);
-            terminalElem.scrollTop = terminalElem.scrollHeight;
-          } else {
-            currentLine = null;
-            flushCallback = null;
-            callback && callback();
-          }
-        }
-        typeChar();
+
+    function executeCommand(cmd) {
+      const output = document.getElementById('output');
+      const cmdLine = document.createElement('div');
+      cmdLine.className = 'line';
+      cmdLine.textContent = '> ' + cmd;
+      output.appendChild(cmdLine);
+
+      if (cmd.trim()) { commandHistory.push(cmd); historyIndex = commandHistory.length; }
+
+      const input = cmd.trim().toLowerCase();
+      let response = '';
+
+      if (terminalCommands[input]) {
+        response = terminalCommands[input]();
+      } else if (input === 'cl') {
+        document.getElementById('output').innerHTML = '';
+        return;
+      } else if (input === '') {
+        return;
       } else {
-        // Instant display for non-color mode
-        terminalElem.scrollTop = terminalElem.scrollHeight;
-        if (callback) callback();
+        response = `'${cmd}' is not recognized as a DpOS command.\nType 'help' to see available commands.`;
       }
+
+      if (response) {
+        const lines = response.split('\n');
+        lines.forEach(line => {
+          const lineEl = document.createElement('div');
+          lineEl.className = 'line';
+          lineEl.textContent = line;
+          output.appendChild(lineEl);
+        });
+      }
+
+      const termBody = document.getElementById('terminalBody');
+      termBody.scrollTop = termBody.scrollHeight;
     }
-    function typeMultipleLines(lines, index = 0) {
-      if (index < lines.length) {
-        typeLine(lines[index], () => typeMultipleLines(lines, index + 1));
+
+    const commandInput = document.getElementById('commandInput');
+    commandInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        executeCommand(this.value);
+        this.value = '';
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex > 0) { historyIndex--; this.value = commandHistory[historyIndex]; }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex < commandHistory.length - 1) { historyIndex++; this.value = commandHistory[historyIndex]; }
+        else { historyIndex = commandHistory.length; this.value = ''; }
       }
-    }
-    function flushTyping() {
-      if (currentLine) {
-        clearAllTimeouts();
-        currentLine.lineElem.textContent = currentLine.text;
-        const cb = flushCallback;
-        currentLine = null;
-        flushCallback = null;
-        cb && cb();
-      }
-    }
-    document.addEventListener('keydown', flushTyping);    function executeCommand(cmd) {
-      clearAllTimeouts();
-      suggestionsDiv.style.display = 'none';
-      
-      if (cmd.trim() !== "") {
-        commandHistory.push(cmd);
-        historyIndex = commandHistory.length;
-      }
-      
-      const commandLine = document.createElement('div');
-      commandLine.className = 'line';
-      commandLine.textContent = '> ' + cmd;
-      outputDiv.appendChild(commandLine);
-      
-      // Parse command and arguments
-      const parts = cmd.trim().split(' ');
-      const baseCmd = parts[0].toLowerCase();
-      const args = parts.slice(1).join(' ');
-      const fullCmd = cmd.toLowerCase().trim();
-      
-      // Show loading for certain commands
-      let loadingElement = null;
-      if (['search', 'export', 'qr', 'compare'].includes(baseCmd)) {
-        loadingElement = showLoading(`Processing ${baseCmd}...`);
-      }
-      
-      setTimeout(() => {
-        try {
-          if (loadingElement) hideLoading(loadingElement);
-          
-          // Easter egg with reduced probability
-          if (Math.random() < 1/8 && !['help', 'search', 'export', 'qr', 'man', 'compare'].includes(baseCmd)) {
-            const overrideCmd = Math.random() < 0.5 ? "pokemon" : "rr";
-            const response = commands[overrideCmd]();
-            if (response) typeMultipleLines(response.split('\\n'));
-            return;
-          }
-          
-          // Check for exact command matches first
-          if (commands[fullCmd]) {
-            const response = commands[fullCmd](args);
-            if (response) typeMultipleLines(response.split('\\n'));
-          }
-          // Check for base command matches
-          else if (commands[baseCmd]) {
-            const response = commands[baseCmd](args);
-            if (response) typeMultipleLines(response.split('\\n'));
-          }
-          // Handle commands with arguments (like rsme -fl --color)
-          else if (baseCmd === 'rsme' && parts[1]) {
-            const subCmd = `${baseCmd} ${parts[1]}`;
-            if (commands[subCmd]) {
-              const response = commands[subCmd](args);
-              if (response) typeMultipleLines(response.split('\\n'));
-            } else {
-              typeLine(`<span class="error">Unknown rsme option: ${parts[1]}</span>`);
-            }
-          }
-          else {
-            // Suggest similar commands
-            const suggestions = allCommands.filter(c => 
-              c.includes(baseCmd) || baseCmd.includes(c)
-            );
-            
-            let errorMsg = `<span class="error">Command not found: ${cmd}</span>`;
-            if (suggestions.length > 0) {
-              errorMsg += `\\n<span class="warning">Did you mean: ${suggestions.slice(0,3).join(', ')}?</span>`;
-            }
-            errorMsg += `\\n<span class="warning">Type "help" for available commands.</span>`;
-            
-            typeLine(errorMsg);
-          }
-        } catch (error) {
-          if (loadingElement) hideLoading(loadingElement);
-          typeLine(`<span class="error">Error executing command: ${error.message}</span>`);
-        }
-        
-        terminalElem.scrollTop = terminalElem.scrollHeight;
-      }, loadingElement ? 500 : 0); // Add delay only for loading commands
-    }    // Enhanced keyboard event handling
-    commandInput.addEventListener('input', function(event) {
-      showSuggestions(event.target.value);
     });
-    
-    commandInput.addEventListener('keydown', function(event) {
-      const suggestions = document.querySelectorAll('.suggestion');
-      
-      if (event.key === 'Enter') {
-        if (selectedSuggestion >= 0 && suggestions.length > 0) {
-          // Use selected suggestion
-          commandInput.value = suggestions[selectedSuggestion].textContent;
-          suggestionsDiv.style.display = 'none';
-          selectedSuggestion = -1;
-        }
-        const cmd = commandInput.value.trim();
-        executeCommand(cmd);
-        commandInput.value = '';
-        suggestionsDiv.style.display = 'none';
-      } 
-      else if (event.key === 'Tab') {
-        event.preventDefault();
-        if (suggestions.length > 0) {
-          commandInput.value = suggestions[0].textContent;
-          suggestionsDiv.style.display = 'none';
-        }
+
+    // Click on desktop to deactivate windows titlebar highlight
+    document.getElementById('desktop').addEventListener('mousedown', (e) => {
+      if (e.target.id === 'desktop' || e.target.id === 'desktopIcons' || e.target.classList.contains('desktop-icon')) {
+        closeStartMenu();
       }
-      else if (event.key === 'Escape') {
-        suggestionsDiv.style.display = 'none';
-        selectedSuggestion = -1;
+    });
+
+    // Initialize terminal as open in window state
+    windowState['terminal'] = 'open';
+    windowOrder.push('terminal');
+
+    // === SNAKE GAME ===
+    let snakeInterval = null;
+    let snakeRunning = false;
+    let snakePaused = false;
+    let snake, snakeDir, snakeFood, snakeScore;
+    const SNAKE_SIZE = 15;
+    const SNAKE_GRID = 20;
+
+    function initSnake() {
+      snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+      snakeDir = {x:1,y:0};
+      snakeScore = 0;
+      snakePaused = false;
+      placeFood();
+      updateSnakeScore();
+      drawSnake();
+    }
+
+    function placeFood() {
+      do { snakeFood = {x:Math.floor(Math.random()*SNAKE_GRID),y:Math.floor(Math.random()*SNAKE_GRID)}; }
+      while (snake.some(s => s.x===snakeFood.x && s.y===snakeFood.y));
+    }
+
+    function startSnake() {
+      if (snakeRunning) return;
+      initSnake();
+      snakeRunning = true;
+      snakeInterval = setInterval(updateSnake, 120);
+    }
+
+    function stopSnake() {
+      snakeRunning = false;
+      snakePaused = false;
+      if (snakeInterval) { clearInterval(snakeInterval); snakeInterval = null; }
+    }
+
+    function updateSnake() {
+      if (snakePaused) return;
+      const head = {x:snake[0].x+snakeDir.x, y:snake[0].y+snakeDir.y};
+      if (head.x<0||head.x>=SNAKE_GRID||head.y<0||head.y>=SNAKE_GRID||snake.some(s=>s.x===head.x&&s.y===head.y)) {
+        stopSnake();
+        const ctx = document.getElementById('snakeCanvas').getContext('2d');
+        ctx.fillStyle='#ff0000'; ctx.font='20px monospace'; ctx.textAlign='center';
+        ctx.fillText('GAME OVER',150,150);
+        ctx.font='12px monospace'; ctx.fillText('Click to restart',150,175);
+        return;
       }
-      else if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        if (suggestions.length > 0 && suggestionsDiv.style.display !== 'none') {
-          navigateSuggestions(-1);
+      snake.unshift(head);
+      if (head.x===snakeFood.x&&head.y===snakeFood.y) { snakeScore+=10; updateSnakeScore(); placeFood(); }
+      else { snake.pop(); }
+      drawSnake();
+    }
+
+    function drawSnake() {
+      const canvas = document.getElementById('snakeCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle='#001a00'; ctx.fillRect(0,0,300,300);
+      ctx.fillStyle='#ff0000';
+      ctx.fillRect(snakeFood.x*SNAKE_SIZE,snakeFood.y*SNAKE_SIZE,SNAKE_SIZE-1,SNAKE_SIZE-1);
+      snake.forEach((s,i) => { ctx.fillStyle = i===0?'#00ff00':'#00cc00'; ctx.fillRect(s.x*SNAKE_SIZE,s.y*SNAKE_SIZE,SNAKE_SIZE-1,SNAKE_SIZE-1); });
+    }
+
+    function updateSnakeScore() { document.getElementById('snakeScore').textContent='Score: '+snakeScore; }
+
+    document.getElementById('snakeCanvas').addEventListener('click', () => { if(!snakeRunning) startSnake(); });
+
+    document.addEventListener('keydown', (e) => {
+      if (!snakeRunning) return;
+      const win = document.getElementById('win-snake');
+      if (!win.classList.contains('open') || win.classList.contains('minimized')) return;
+      if (e.key===' ') { snakePaused=!snakePaused; e.preventDefault(); return; }
+      const dirs = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0}};
+      if (dirs[e.key]) {
+        const d=dirs[e.key];
+        if (d.x!==-snakeDir.x||d.y!==-snakeDir.y) { snakeDir=d; }
+        e.preventDefault();
+      }
+    });
+
+    // === MINESWEEPER ===
+    const MINE_ROWS=9, MINE_COLS=9, MINE_COUNT=10;
+    let mineBoard=[], mineRevealed=[], mineFlagged=[], mineGameOver=false, mineWon=false, mineTimerVal=0, mineTimerInterval=null, mineFirstClick=true;
+
+    function initMinesweeper() {
+      mineBoard=[]; mineRevealed=[]; mineFlagged=[]; mineGameOver=false; mineWon=false; mineTimerVal=0; mineFirstClick=true;
+      if(mineTimerInterval){clearInterval(mineTimerInterval);mineTimerInterval=null;}
+      document.getElementById('mineTimer').textContent='0';
+      document.getElementById('mineCount').textContent=MINE_COUNT;
+      document.getElementById('mineReset').textContent='🙂';
+      for(let r=0;r<MINE_ROWS;r++){mineBoard[r]=[];mineRevealed[r]=[];mineFlagged[r]=[];for(let c=0;c<MINE_COLS;c++){mineBoard[r][c]=0;mineRevealed[r][c]=false;mineFlagged[r][c]=false;}}
+      // Place mines
+      let placed=0;
+      while(placed<MINE_COUNT){const r=Math.floor(Math.random()*MINE_ROWS),c=Math.floor(Math.random()*MINE_COLS);if(mineBoard[r][c]!==-1){mineBoard[r][c]=-1;placed++;}}
+      // Calc numbers
+      for(let r=0;r<MINE_ROWS;r++)for(let c=0;c<MINE_COLS;c++){if(mineBoard[r][c]===-1)continue;let count=0;for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<MINE_ROWS&&nc>=0&&nc<MINE_COLS&&mineBoard[nr][nc]===-1)count++;}mineBoard[r][c]=count;}
+      renderMines();
+    }
+
+    function renderMines() {
+      const grid=document.getElementById('mineGrid');
+      grid.innerHTML='';
+      const colors=['','#0000ff','#008000','#ff0000','#000080','#800000','#008080','#000','#808080'];
+      for(let r=0;r<MINE_ROWS;r++)for(let c=0;c<MINE_COLS;c++){
+        const cell=document.createElement('div');
+        cell.style.cssText='width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;cursor:pointer;user-select:none;';
+        if(mineRevealed[r][c]){
+          cell.style.background='#d0d0d0'; cell.style.border='1px solid #808080';
+          if(mineBoard[r][c]===-1){cell.textContent='💣';cell.style.background='#ff0000';}
+          else if(mineBoard[r][c]>0){cell.textContent=mineBoard[r][c];cell.style.color=colors[mineBoard[r][c]];}
         } else {
-          // Command history
-          if (commandHistory.length > 0 && historyIndex > 0) {
-            historyIndex--;
-            commandInput.value = commandHistory[historyIndex];
-          }
+          cell.style.background='#c0c0c0'; cell.style.border='2px outset #fff';
+          if(mineFlagged[r][c]) cell.textContent='🚩';
         }
-      } 
-      else if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        if (suggestions.length > 0 && suggestionsDiv.style.display !== 'none') {
-          navigateSuggestions(1);
-        } else {
-          // Command history
-          if (commandHistory.length > 0 && historyIndex < commandHistory.length - 1) {
-            historyIndex++;
-            commandInput.value = commandHistory[historyIndex];
-          } else {
-            historyIndex = commandHistory.length;
-            commandInput.value = "";
-          }
-        }
+        cell.addEventListener('click',()=>revealMine(r,c));
+        cell.addEventListener('contextmenu',(e)=>{e.preventDefault();flagMine(r,c);});
+        grid.appendChild(cell);
       }
-    });
+    }
+
+    function revealMine(r,c) {
+      if(mineGameOver||mineWon||mineRevealed[r][c]||mineFlagged[r][c]) return;
+      if(mineFirstClick){mineFirstClick=false;mineTimerInterval=setInterval(()=>{mineTimerVal++;document.getElementById('mineTimer').textContent=mineTimerVal;},1000);}
+      mineRevealed[r][c]=true;
+      if(mineBoard[r][c]===-1){mineGameOver=true;document.getElementById('mineReset').textContent='😵';revealAllMines();if(mineTimerInterval){clearInterval(mineTimerInterval);mineTimerInterval=null;}}
+      else{if(mineBoard[r][c]===0){for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<MINE_ROWS&&nc>=0&&nc<MINE_COLS&&!mineRevealed[nr][nc])revealMine(nr,nc);}}checkMineWin();}
+      renderMines();
+    }
+
+    function flagMine(r,c) {
+      if(mineGameOver||mineWon||mineRevealed[r][c]) return;
+      mineFlagged[r][c]=!mineFlagged[r][c];
+      let flags=0;for(let r2=0;r2<MINE_ROWS;r2++)for(let c2=0;c2<MINE_COLS;c2++)if(mineFlagged[r2][c2])flags++;
+      document.getElementById('mineCount').textContent=MINE_COUNT-flags;
+      renderMines();
+    }
+
+    function revealAllMines(){for(let r=0;r<MINE_ROWS;r++)for(let c=0;c<MINE_COLS;c++)if(mineBoard[r][c]===-1)mineRevealed[r][c]=true;}
+
+    function checkMineWin(){
+      let unrevealed=0;for(let r=0;r<MINE_ROWS;r++)for(let c=0;c<MINE_COLS;c++)if(!mineRevealed[r][c])unrevealed++;
+      if(unrevealed===MINE_COUNT){mineWon=true;document.getElementById('mineReset').textContent='😎';if(mineTimerInterval){clearInterval(mineTimerInterval);mineTimerInterval=null;}}
+    }
+
+    initMinesweeper();
+
+    // === PHOTO GALLERY ===
+    // Loads images from photos/ folder. Add your .jpg/.png files there.
+    const photoFiles = ['35mm-01.jpg','35mm-02.jpg','35mm-03.jpg','35mm-04.jpg','35mm-05.jpg','35mm-06.jpg','35mm-07.jpg','35mm-08.jpg','35mm-09.jpg','35mm-10.jpg','35mm-11.jpg','35mm-12.jpg','35mm-13.jpg','35mm-14.jpg','35mm-15.jpg','35mm-16.jpg','35mm-17.jpg','35mm-18.jpg','35mm-19.jpg','35mm-20.jpg'];
+    // To add photos: list filenames here, e.g. ['roll1_001.jpg', 'roll1_002.jpg']
+    // Or they can be loaded dynamically if you set them up below:
+    const PHOTO_DIR = 'photos/';
     
-    // Click outside to hide suggestions
-    document.addEventListener('click', function(event) {
-      if (!event.target.closest('.input-line')) {
-        suggestionsDiv.style.display = 'none';
-        selectedSuggestion = -1;
-      }
-    });    // Enhanced button event handlers with ARIA support
-    document.querySelectorAll('.cmdButton').forEach(btn => {
-      btn.addEventListener('click', () => executeCommand(btn.getAttribute('data-cmd')));
-      btn.setAttribute('role', 'button');
-      btn.setAttribute('tabindex', '0');
-      
-      // Keyboard accessibility for buttons
-      btn.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          executeCommand(btn.getAttribute('data-cmd'));
-        }
+    function loadPhotos() {
+      const gallery = document.getElementById('photoGallery');
+      const noPhotos = document.getElementById('noPhotos');
+      if (photoFiles.length === 0) { noPhotos.style.display = 'block'; return; }
+      noPhotos.style.display = 'none';
+      gallery.innerHTML = '';
+      photoFiles.forEach(file => {
+        const img = document.createElement('img');
+        img.src = PHOTO_DIR + file;
+        img.alt = file;
+        img.style.cssText = 'width:100%;height:140px;object-fit:cover;border:2px solid #333;cursor:pointer;';
+        img.onclick = () => { window.open(PHOTO_DIR + file, '_blank'); };
+        gallery.appendChild(img);
       });
+    }
+    loadPhotos();
+
+    function handleLogin() {
+      const input = document.getElementById('loginInput').value.trim() || 'visitor';
+      visitorName = input;
+      // Track in GA4
+      gtag('event', 'login', { method: 'dpos_login', visitor_name: input });
+      // Hide login, show desktop
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('desktop').classList.add('show');
+      updateTaskbar();
+      updateClock();
+      setInterval(updateClock, 60000);
+      document.getElementById('commandInput').focus();
+    }
+
+    document.getElementById('loginInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleLogin();
     });
-    
-    const menuButton = document.getElementById('menuButton');
-    const mobileNav = document.getElementById('mobileNav');
-    
-    menuButton.addEventListener('click', () => {
-      const isOpen = mobileNav.style.display === 'flex';
-      mobileNav.style.display = isOpen ? 'none' : 'flex';
-      menuButton.setAttribute('aria-expanded', !isOpen);
-    });
-    
-    document.querySelectorAll('#mobileNav button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        executeCommand(btn.getAttribute('data-cmd'));
-        mobileNav.style.display = 'none';
-        menuButton.setAttribute('aria-expanded', 'false');
-      });
-      
-      // Mobile button accessibility
-      btn.setAttribute('role', 'button');
-      btn.setAttribute('tabindex', '0');
-    });
-    
-    // Initialize accessibility attributes
-    menuButton.setAttribute('aria-expanded', 'false');
-    mobileNav.setAttribute('role', 'menu');
-    document.getElementById('terminal').setAttribute('role', 'log');
-    document.getElementById('terminal').setAttribute('aria-live', 'polite');
-      // Start boot sequence when page loads
-    window.addEventListener('load', () => {
-      setTimeout(runBootSequence, 500);
-    });
+
+    // Start boot on load
+    window.addEventListener('load', () => { setTimeout(runBootSequence, 300); });
   </script>
 </body>
 </html>
