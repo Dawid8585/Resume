@@ -28,13 +28,13 @@
       font-family: "MS Sans Serif", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       font-size: 15px;
       overflow: hidden;
-      height: 100vh;
+      height: 100vh; height: 100dvh;
       user-select: none;
     }
 
     /* === LOGIN SCREEN === */
     #loginScreen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh;
       background: #008080;
       background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23007070'/%3E%3C/svg%3E");
       z-index: 100000;
@@ -67,7 +67,7 @@
 
     /* === BOOT SCREEN === */
     #bootScreen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh;
       background: black; color: #0f0; z-index: 99999;
       display: flex; flex-direction: column; justify-content: flex-start;
       padding: 20px; font-family: "Courier New", monospace; font-size: 0.9em; line-height: 1.3;
@@ -91,7 +91,7 @@
 
     /* === DESKTOP === */
     #desktop {
-      width: 100%; height: 100vh;
+      width: 100%; height: 100vh; height: 100dvh;
       background-color: #008080;
       background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='%23007070'/%3E%3C/svg%3E");
       position: relative;
@@ -239,6 +239,18 @@
       padding: 2px 7px; margin: 2px; font-size: 12px;
     }
 
+    /* === PHOTO VIEWER NAV === */
+    .photo-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.6); color: #fff; border: none;
+      font-size: 36px; width: 44px; height: 64px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.7; z-index: 10; user-select: none;
+    }
+    .photo-nav:hover { opacity: 1; background: rgba(0,0,0,0.8); }
+    .photo-nav-left { left: 0; border-radius: 0 4px 4px 0; }
+    .photo-nav-right { right: 0; border-radius: 4px 0 0 4px; }
+
     /* === SNAKE D-PAD === */
     #snakeDpad { display: none; margin-top: 8px; }
     .dpad-row { display: flex; justify-content: center; gap: 4px; }
@@ -255,20 +267,37 @@
     @media (max-width: 768px) {
       #snakeDpad { display: block; }
       .snake-desktop-hint { display: none; }
-    }
 
-    /* === MOBILE === */
-    @media (max-width: 768px) {
-      #desktopIcons { display: flex; flex-direction: row; flex-wrap: wrap; position: static; width: auto; height: auto; padding: 8px; gap: 8px; }
-      .desktop-icon { position: static !important; }
+      #desktop {
+        height: 100vh; height: 100dvh;
+        overflow-y: auto;
+        padding-bottom: 35px;
+      }
+      #desktopIcons {
+        display: flex; flex-direction: row; flex-wrap: wrap;
+        position: static; width: auto; height: auto;
+        padding: 12px 8px; gap: 10px;
+        justify-content: flex-start;
+      }
+      .desktop-icon { position: static !important; width: 64px; }
+      .desktop-icon .icon-img { width: 32px; height: 32px; }
+      .desktop-icon .icon-label { font-size: 11px; }
       .app-window {
         position: fixed !important; top: 0 !important; left: 0 !important;
-        width: 100% !important; height: calc(100% - 35px) !important;
+        width: 100% !important; height: calc(100dvh - 35px) !important;
         min-width: unset; min-height: unset;
+        border: none; box-shadow: none;
       }
-      .desktop-icon { width: 60px; }
-      .desktop-icon .icon-img { width: 28px; height: 28px; }
-      .desktop-icon .icon-label { font-size: 10px; }
+      .app-window.maximized {
+        height: calc(100dvh - 35px) !important;
+      }
+      #taskbar { height: 35px; }
+      #loginBox { width: 90%; max-width: 334px; padding: 20px; }
+      #loginInput { font-size: 16px; }
+      .window-body { padding: 8px; font-size: 13px; }
+      .terminal-body { font-size: 14px; }
+      .terminal-body #commandInput { font-size: 16px; }
+      #snakeCanvas { max-width: 100%; height: auto; }
     }
   </style>
 </head>
@@ -476,9 +505,25 @@ Integer in mauris eu nibh euismod gravida. Duis ac tellus et risus vulputate veh
       </div>
       <div class="window-body" style="background:#1a1a1a;color:#ccc;">
         <h2 style="color:#fff;">35mm Film Photography</h2>
-        <p style="color:#999;font-size:11px;margin-bottom:12px;">Shot on various analog cameras. All photos are in the <code style="background:#333;padding:1px 4px;">photos/</code> folder.</p>
         <div id="photoGallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
-        <p id="noPhotos" style="color:#666;font-style:italic;margin-top:16px;text-align:center;">Drop your 35mm scans into the photos/ folder and they'll show up here.</p>
+        <p id="noPhotos" style="color:#666;font-style:italic;margin-top:16px;text-align:center;display:none;"></p>
+      </div>
+    </div>
+
+    <!-- Photo Viewer Window -->
+    <div class="app-window" id="win-photoview" style="top:20px;left:100px;width:600px;height:500px;">
+      <div class="window-titlebar" onmousedown="startDrag(event,'win-photoview')">
+        <span class="window-title" id="photoViewTitle">Photo Viewer</span>
+        <div class="window-controls">
+          <div class="window-btn" onclick="minimizeWindow('photoview')">_</div>
+          <div class="window-btn" onclick="maximizeWindow('photoview')">□</div>
+          <div class="window-btn" onclick="closeWindow('photoview')">×</div>
+        </div>
+      </div>
+      <div class="window-body" id="photoViewBody" style="background:#1a1a1a;padding:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+        <button class="photo-nav photo-nav-left" onclick="photoNav(-1)">‹</button>
+        <img id="photoViewImg" src="" alt="" style="max-width:100%;max-height:100%;object-fit:contain;">
+        <button class="photo-nav photo-nav-right" onclick="photoNav(1)">›</button>
       </div>
     </div>
 
@@ -941,9 +986,7 @@ Side: film photography (35mm), climbing, car tech.`,
       }
     });
 
-    // Initialize terminal as open in window state
-    windowState['terminal'] = 'open';
-    windowOrder.push('terminal');
+    // No windows open by default
 
     // === SNAKE GAME ===
     let snakeInterval = null;
@@ -1097,7 +1140,7 @@ Side: film photography (35mm), climbing, car tech.`,
 
     // === PHOTO GALLERY ===
     // Loads images from photos/ folder. Add your .jpg/.png files there.
-    const photoFiles = ['35mm-01.jpg','35mm-02.jpg','35mm-03.jpg','35mm-04.jpg','35mm-05.jpg','35mm-06.jpg','35mm-07.jpg','35mm-08.jpg','35mm-09.jpg','35mm-10.jpg','35mm-11.jpg','35mm-12.jpg','35mm-13.jpg','35mm-14.jpg','35mm-15.jpg','35mm-16.jpg','35mm-17.jpg','35mm-18.jpg','35mm-19.jpg','35mm-20.jpg'];
+    const photoFiles = ['Abstract_FilmBurnAirportDepartures.jpeg','Architecture_GlassSpireTower.jpeg','Auto_OrangeMcLarenVineyard.jpeg','Aviation_CabinOverheadBins.jpeg','Aviation_DCAerialWashingtonMonument.jpeg','Aviation_RunwayWindowView.jpeg','Beach_BoardWalk.jpeg','Beach_CoupleWatchingWaves.jpeg','Beach_FlippedRental.jpeg','Beach_Man.jpeg','Beach_RockJettySplash.jpeg','Beach_RockJettyWaves.jpeg','Beach_StatueOfLibertyHarbor.jpeg','Beach_StormySurfSkyline.jpeg','Boat_RentalCanoes.jpeg','BW_AmericanFlagReflection.jpeg','BW_FlagFloorShadows.jpeg','BW_MartinsWindowDinerWide.jpeg','BW_MeshFenceAbstract.jpeg','BW_RearviewCameraSelfPortrait.jpeg','BW_RockClimberFramedByLeaves.jpeg','BW_RockClimberWallWide.jpeg','BW_SoldierMuseumDisplay.jpeg','BW_VintageParlorLattice.jpeg','Campfire_PortraitByFire.jpeg','Campfire_SkilletFlamesClose.jpeg','Campfire_SkilletSmoke.jpeg','City_AcmeFarmSupplySign.jpeg','City_AutumnStreetCars.jpeg','City_GeorgetownTheaterNight.jpeg','City_MexicoEmbassyStreet.jpeg','Concert_GuitaristStagePortrait.jpeg','Concert_RedHairedSingerCrowd.jpeg','DC_CapitalBikeshareRow.jpeg','DC_CherryBlossomsWashingtonMonument.jpeg','DC_JeffersonMemorialBlossoms.jpeg','DC_LincolnMemorialGoldenHour.jpeg','DC_SmithsonianSignWashingtonMonument.jpeg','Ferry_InteriorWindowSeats.jpeg','Fireplace_PatioFlamesLightLeak.jpeg','Fireplace_WineLoungeSilhouette.jpeg','Interior_TropicalAtriumStairs.jpeg','Lake_DockLowAngle.jpeg','Landscape_RockyBridgeTrail.jpeg','Moto_BlackMotorcycleContainer.jpeg','Nature_LavenderRustSculpture.jpeg','Nature_MagnoliaDoubleExposure.jpeg','NYC_SailboatSkyline.jpeg','Objects_ColorfulBottleCaps.jpeg','Patio_BlueCourtyardUmbrellas.jpeg','Patio_FirePitTrees.jpeg','Pet_CatRoseWindow.jpeg','Portrait_RiverPonchoBack.jpeg','Portrait_ViewfinderStump.jpeg','Transit_BusStop19thStreet.jpeg','Transit_MetroTrainPlatform.jpeg','Travel_AirportFlagTerminal.jpeg','Travel_SnowyHillsRoadside.jpeg','Travel_SnowyMountainRoadCurve.jpeg','Travel_SnowyMountainTownStreet.jpeg','Travel_SnowyRoadLightLeak.jpeg','Travel_TeddyBearDashboard.jpeg','Tropical_PalmLifeguardStation.jpeg','Wine_BarrelHallSymmetry.jpeg','Wine_BarrelRoomClose.jpeg','Wine_LavenderHouseDoubleExposure.jpeg','Wine_VineyardCatwalkHills.jpeg','Wine_VineyardRows.jpeg'];
     // To add photos: list filenames here, e.g. ['roll1_001.jpg', 'roll1_002.jpg']
     // Or they can be loaded dynamically if you set them up below:
     const PHOTO_DIR = 'photos/';
@@ -1113,11 +1156,51 @@ Side: film photography (35mm), climbing, car tech.`,
         img.src = PHOTO_DIR + file;
         img.alt = file;
         img.style.cssText = 'width:100%;height:140px;object-fit:cover;border:2px solid #333;cursor:pointer;';
-        img.onclick = () => { window.open(PHOTO_DIR + file, '_blank'); };
+        img.onclick = () => { openPhotoViewer(file); };
         gallery.appendChild(img);
       });
     }
     loadPhotos();
+
+    function openPhotoViewer(file) {
+      currentPhotoIndex = photoFiles.indexOf(file);
+      document.getElementById('photoViewImg').src = PHOTO_DIR + file;
+      document.getElementById('photoViewTitle').textContent = file;
+      openWindow('photoview');
+      maximizeWindow('photoview');
+    }
+
+    let currentPhotoIndex = 0;
+
+    function photoNav(dir) {
+      currentPhotoIndex += dir;
+      if (currentPhotoIndex < 0) currentPhotoIndex = photoFiles.length - 1;
+      if (currentPhotoIndex >= photoFiles.length) currentPhotoIndex = 0;
+      const file = photoFiles[currentPhotoIndex];
+      document.getElementById('photoViewImg').src = PHOTO_DIR + file;
+      document.getElementById('photoViewTitle').textContent = file;
+    }
+
+    // Keyboard nav for photo viewer
+    document.addEventListener('keydown', (e) => {
+      const win = document.getElementById('win-photoview');
+      if (!win.classList.contains('open') || win.classList.contains('minimized')) return;
+      if (e.key === 'ArrowLeft') { photoNav(-1); e.preventDefault(); }
+      else if (e.key === 'ArrowRight') { photoNav(1); e.preventDefault(); }
+    });
+
+    // Swipe support for photo viewer
+    (function() {
+      let touchStartX = 0;
+      let touchEndX = 0;
+      const body = document.getElementById('photoViewBody');
+      body.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+      body.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50) { photoNav(diff > 0 ? 1 : -1); }
+      }, {passive: true});
+    })();
 
     function handleLogin() {
       const input = document.getElementById('loginInput').value.trim() || 'visitor';
