@@ -2244,8 +2244,9 @@ Side: film photography (35mm), climbing, car tech.`,
         rCtx.fillStyle = 'rgba(0,0,0,0.45)';
         rCtx.fillRect(0, 0, W, H);
 
-        // Current sprite frame (hold each frame equally)
-        const frameIdx = Math.min(FRAME_COUNT - 1, Math.floor(t * FRAME_COUNT));
+        // Current sprite frame — skip frame 0, use frames 1-5 (5 frames total)
+        const usableFrames = 5;
+        const frameIdx = Math.min(usableFrames - 1, Math.floor(t * usableFrames)) + 1; // offset by 1 to skip first
         const col = frameIdx % SHEET_COLS;
         const row = Math.floor(frameIdx / SHEET_COLS);
         const srcX = col * cellW;
@@ -2258,18 +2259,6 @@ Side: film photography (35mm), climbing, car tech.`,
           const dx = (W - drawW) / 2;
           const dy = (H - drawH) / 2;
           rCtx.drawImage(FPS.imgSheet, srcX, srcY, cellW, cellH, dx, dy, drawW, drawH);
-
-          // On first frame, overlay the old (used) film roll inside the camera
-          if (frameIdx === 0 && FPS.imgRoll && FPS.imgRoll.complete && FPS.imgRoll.naturalWidth > 0) {
-            // Position the roll in the left film well area of the drawn frame
-            const rollW = drawW * 0.12;
-            const rollH = rollW * (456 / 303); // match source aspect (303x456 content)
-            const rollX = dx + drawW * 0.22 - rollW / 2;
-            const rollY = dy + drawH * 0.38;
-            rCtx.globalAlpha = 0.9;
-            rCtx.drawImage(FPS.imgRoll, 552, 153, 303, 456, rollX, rollY, rollW, rollH);
-            rCtx.globalAlpha = 1;
-          }
         }
 
         // Fade to black as camera returns to face
