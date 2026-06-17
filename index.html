@@ -636,6 +636,7 @@
           </div>
           <div id="fpsViewfinderFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border:3px solid #333;box-shadow:inset 0 0 80px rgba(0,0,0,0.9);border-radius:8px;"></div>
           <div id="fpsPhotoCounter" style="position:absolute;bottom:12px;right:16px;color:#ff8800;font-family:'Courier New',monospace;font-size:14px;text-shadow:0 0 4px #ff8800;"></div>
+          <img id="fpsRollIcon" src="darkroom_roll.png" alt="film roll" style="position:absolute;bottom:34px;right:18px;width:28px;height:auto;opacity:0.85;pointer-events:none;filter:drop-shadow(0 0 3px rgba(255,136,0,0.5));">
           <div id="fpsViewfinderHint" style="position:absolute;bottom:12px;left:16px;color:#888;font-family:'Courier New',monospace;font-size:11px;">SCROLL or ←/→ to browse · E to reload film</div>
           <div id="fpsViewfinderReloadBtn" style="position:absolute;top:16px;right:16px;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,136,0,0.6);display:flex;align-items:center;justify-content:center;color:#ff8800;font-family:'Courier New',monospace;font-size:10px;font-weight:bold;cursor:pointer;text-align:center;line-height:1.1;" onclick="fpsReloadFilm()">NEW<br>ROLL</div>
           <div id="fpsViewfinderPutDownBtn" style="position:absolute;top:16px;left:16px;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;color:#aaa;font-family:'Courier New',monospace;font-size:9px;font-weight:bold;cursor:pointer;text-align:center;line-height:1.1;" onclick="hideFPSViewfinder()">PUT<br>DOWN</div>
@@ -1400,6 +1401,10 @@ Side: film photography (35mm), climbing, car tech.`,
           img.src = PHOTO_DIR + photoFiles[gp.photoIdx % photoFiles.length];
           FPS.galleryImgs.push(img);
         });
+        // Camera, roll, and reload sprite sheet art
+        FPS.imgCamera = new Image(); FPS.imgCamera.src = 'darkroom_camera.png';
+        FPS.imgRoll = new Image(); FPS.imgRoll.src = 'darkroom_roll.png';
+        FPS.imgSheet = new Image(); FPS.imgSheet.src = 'darkroom_reload_sheet.png';
         FPS.galleryImgsLoaded = true;
       }
       // Init flickering lights
@@ -2114,68 +2119,36 @@ Side: film photography (35mm), climbing, car tech.`,
 
       // === CAMERA on top (only if not picked up) ===
       if (!FPS.cameraPickedUp) {
-      const camW = podW * 0.55;
-      const camH = camW * 0.6;
-      const camX = screenX - camW / 2;
-      const camY = colY - topH - camH;
+      // Camera image content bbox within the 1408x768 source
+      const camSrcX = 117, camSrcY = 12, camSrcW = 1173, camSrcH = 738;
+      const camAspect = camSrcH / camSrcW; // ~0.629
+      // Draw camera resting on the podium top
+      const camDrawW = podW * 0.95;
+      const camDrawH = camDrawW * camAspect;
+      const camX = screenX - camDrawW / 2;
+      const camY = (colY - topH) - camDrawH; // bottom sits on podium top surface
 
-      // Camera body (dark metal)
-      ctx.fillStyle = `rgb(${Math.floor(25*bright)},${Math.floor(25*bright)},${Math.floor(28*bright)})`;
-      ctx.fillRect(camX, camY, camW, camH);
-
-      // Silver top plate
-      ctx.fillStyle = `rgb(${Math.floor(90*bright)},${Math.floor(88*bright)},${Math.floor(85*bright)})`;
-      ctx.fillRect(camX, camY, camW, camH * 0.2);
-
-      // Lens barrel
-      const lensR = camH * 0.32;
-      const lensCX = screenX;
-      const lensCY = camY + camH * 0.6;
-      
-      // Outer lens ring
-      ctx.beginPath();
-      ctx.arc(lensCX, lensCY, lensR, 0, Math.PI * 2);
-      ctx.fillStyle = `rgb(${Math.floor(15*bright)},${Math.floor(15*bright)},${Math.floor(15*bright)})`;
-      ctx.fill();
-      
-      // Inner glass
-      ctx.beginPath();
-      ctx.arc(lensCX, lensCY, lensR * 0.65, 0, Math.PI * 2);
-      ctx.fillStyle = `rgb(${Math.floor(30*bright)},${Math.floor(40*bright)},${Math.floor(80*bright)})`;
-      ctx.fill();
-      
-      // Lens reflection highlight
-      ctx.beginPath();
-      ctx.arc(lensCX - lensR * 0.2, lensCY - lensR * 0.2, lensR * 0.2, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(150,200,255,${0.3*bright})`;
-      ctx.fill();
-
-      // Viewfinder hump
-      const vfW = camW * 0.25;
-      const vfH = camH * 0.3;
-      ctx.fillStyle = `rgb(${Math.floor(35*bright)},${Math.floor(35*bright)},${Math.floor(38*bright)})`;
-      ctx.fillRect(screenX - vfW * 0.3, camY - vfH, vfW, vfH);
-
-      // Film advance lever
-      ctx.fillStyle = `rgb(${Math.floor(100*bright)},${Math.floor(95*bright)},${Math.floor(90*bright)})`;
-      ctx.fillRect(camX + camW - camW * 0.15, camY - camH * 0.1, camW * 0.12, camH * 0.15);
-
-      // Rewind knob
-      ctx.fillStyle = `rgb(${Math.floor(80*bright)},${Math.floor(78*bright)},${Math.floor(75*bright)})`;
-      ctx.fillRect(camX + camW * 0.05, camY - camH * 0.08, camW * 0.1, camH * 0.12);
+      // Apply distance-based brightness via temporary dimming overlay trick:
+      // draw image, then multiply with a dark rect using 'multiply' if dim needed.
+      if (FPS.imgCamera && FPS.imgCamera.complete && FPS.imgCamera.naturalWidth > 0) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.35, bright);
+        ctx.drawImage(FPS.imgCamera, camSrcX, camSrcY, camSrcW, camSrcH, camX, camY, camDrawW, camDrawH);
+        ctx.restore();
+      }
 
       // === INTERACTION GLOW ===
       if (dist < FPS.interactDist) {
         const pulse = 0.4 + 0.3 * Math.sin(Date.now() / 250);
         ctx.strokeStyle = `rgba(0,255,0,${pulse})`;
         ctx.lineWidth = 2;
-        ctx.strokeRect(camX - 6, camY - vfH - 4, camW + 12, camH + vfH + topH + 8);
-        
+        ctx.strokeRect(camX - 6, camY - 6, camDrawW + 12, camDrawH + topH + 12);
+
         // "E" prompt above camera
         ctx.fillStyle = `rgba(0,255,0,${pulse + 0.2})`;
         ctx.font = `bold ${Math.max(12, Math.floor(scale * 0.15))}px "Courier New", monospace`;
         ctx.textAlign = 'center';
-        ctx.fillText('[E]', screenX, camY - vfH - 10);
+        ctx.fillText('[E]', screenX, camY - 12);
         ctx.textAlign = 'left';
       }
       } // end camera on top
@@ -2253,7 +2226,13 @@ Side: film photography (35mm), climbing, car tech.`,
       FPS.canvas = document.getElementById('fpsCanvas');
 
       const startTime = Date.now();
-      const totalDuration = 4500;
+      const totalDuration = 4200;
+
+      // Sprite sheet: 3 columns x 2 rows = 6 frames
+      const SHEET_COLS = 3, SHEET_ROWS = 2, FRAME_COUNT = 6;
+      const cellW = 1408 / SHEET_COLS;
+      const cellH = 768 / SHEET_ROWS;
+      const frameAspect = cellW / cellH;
 
       function drawReloadFrame() {
         const elapsed = Date.now() - startTime;
@@ -2261,249 +2240,24 @@ Side: film photography (35mm), climbing, car tech.`,
 
         // Draw room background
         rCtx.drawImage(roomSnap, 0, 0);
-        // Slight dim so camera is visible against it
-        rCtx.fillStyle = 'rgba(0,0,0,0.3)';
+        // Dim so the camera sprite reads against the room
+        rCtx.fillStyle = 'rgba(0,0,0,0.45)';
         rCtx.fillRect(0, 0, W, H);
 
-        const cx = W / 2, cy = H / 2;
+        // Current sprite frame (hold each frame equally)
+        const frameIdx = Math.min(FRAME_COUNT - 1, Math.floor(t * FRAME_COUNT));
+        const col = frameIdx % SHEET_COLS;
+        const row = Math.floor(frameIdx / SHEET_COLS);
+        const srcX = col * cellW;
+        const srcY = row * cellH;
 
-        // Phases:
-        // 0.00-0.15: Camera pulls away from face
-        // 0.15-0.28: Rotate to show back
-        // 0.28-0.40: Back opens
-        // 0.40-0.55: Old roll comes out
-        // 0.55-0.72: New roll goes in
-        // 0.72-0.84: Back closes
-        // 0.84-1.00: Camera returns to face
-
-        let camScale, camRotation, backOpen, rollOut, rollIn;
-
-        if (t < 0.15) {
-          const p = t / 0.15;
-          camScale = 4.0 - p * 2.2;
-          camRotation = 0; backOpen = 0; rollOut = 0; rollIn = 0;
-        } else if (t < 0.28) {
-          const p = (t - 0.15) / 0.13;
-          camScale = 1.8; camRotation = p;
-          backOpen = 0; rollOut = 0; rollIn = 0;
-        } else if (t < 0.40) {
-          const p = (t - 0.28) / 0.12;
-          camScale = 1.8; camRotation = 1; backOpen = p;
-          rollOut = 0; rollIn = 0;
-        } else if (t < 0.55) {
-          const p = (t - 0.40) / 0.15;
-          camScale = 1.8; camRotation = 1; backOpen = 1;
-          rollOut = p; rollIn = 0;
-        } else if (t < 0.72) {
-          const p = (t - 0.55) / 0.17;
-          camScale = 1.8; camRotation = 1; backOpen = 1;
-          rollOut = 1; rollIn = p;
-        } else if (t < 0.84) {
-          const p = (t - 0.72) / 0.12;
-          camScale = 1.8; camRotation = 1; backOpen = 1 - p;
-          rollOut = 1; rollIn = 1;
-        } else {
-          const p = (t - 0.84) / 0.16;
-          camScale = 1.8 + p * 2.2;
-          camRotation = 1 - p;
-          backOpen = 0; rollOut = 1; rollIn = 1;
-        }
-
-        const s = camScale;
-        const bw = 150 * s, bh = 95 * s;
-        const bx = cx - bw/2, by = cy - bh/2;
-
-        // === FRONT VIEW ===
-        if (camRotation < 0.5) {
-          const alpha = 1 - camRotation * 2;
-          rCtx.globalAlpha = alpha;
-          // Body
-          rCtx.fillStyle = '#1a1a1a';
-          rCtx.fillRect(bx, by, bw, bh);
-          // Silver top plate
-          rCtx.fillStyle = '#777';
-          rCtx.fillRect(bx, by, bw, bh * 0.18);
-          // Lens mount
-          rCtx.fillStyle = '#0a0a0a';
-          rCtx.beginPath(); rCtx.arc(cx, cy + bh*0.08, bh*0.28, 0, Math.PI*2); rCtx.fill();
-          rCtx.fillStyle = '#1a1a2a';
-          rCtx.beginPath(); rCtx.arc(cx, cy + bh*0.08, bh*0.18, 0, Math.PI*2); rCtx.fill();
-          // Lens glass
-          rCtx.fillStyle = 'rgba(80,120,200,0.25)';
-          rCtx.beginPath(); rCtx.arc(cx - bh*0.04, cy + bh*0.03, bh*0.06, 0, Math.PI*2); rCtx.fill();
-          // Viewfinder
-          rCtx.fillStyle = '#2a2a2a';
-          rCtx.fillRect(cx - bw*0.07, by - bh*0.12, bw*0.14, bh*0.14);
-          rCtx.globalAlpha = 1;
-        }
-
-        // === BACK VIEW ===
-        if (camRotation > 0.3) {
-          const alpha = Math.min(1, (camRotation - 0.3) / 0.4);
-          rCtx.globalAlpha = alpha;
-
-          // Camera body (back)
-          rCtx.fillStyle = '#1a1a1a';
-          rCtx.fillRect(bx, by, bw, bh);
-          // Top plate
-          rCtx.fillStyle = '#555';
-          rCtx.fillRect(bx, by, bw, bh * 0.12);
-
-          // Film chamber area
-          const chamberX = bx + bw * 0.08;
-          const chamberY = by + bh * 0.18;
-          const chamberW = bw * 0.84;
-          const chamberH = bh * 0.7;
-
-          if (backOpen > 0) {
-            // Door swings open (shrinks from right)
-            const doorW = chamberW * (1 - backOpen * 0.7);
-            rCtx.fillStyle = '#252525';
-            rCtx.fillRect(chamberX, chamberY, doorW, chamberH);
-            // Hinge
-            rCtx.fillStyle = '#444';
-            rCtx.fillRect(chamberX, chamberY, 3*s, chamberH);
-
-            // Film compartment interior
-            if (backOpen > 0.2) {
-              const iAlpha = Math.min(1, (backOpen - 0.2) / 0.5);
-              rCtx.globalAlpha = alpha * iAlpha;
-
-              // Dark interior
-              rCtx.fillStyle = '#050505';
-              rCtx.fillRect(chamberX, chamberY, chamberW, chamberH);
-
-              // Film gate (center strip where film runs)
-              const gateX = chamberX + chamberW * 0.25;
-              const gateW = chamberW * 0.5;
-              rCtx.fillStyle = '#111';
-              rCtx.fillRect(gateX, chamberY + 2*s, gateW, chamberH - 4*s);
-
-              // Sprocket rails top/bottom
-              rCtx.fillStyle = '#2a2a2a';
-              rCtx.fillRect(gateX, chamberY + 4*s, gateW, 3*s);
-              rCtx.fillRect(gateX, chamberY + chamberH - 7*s, gateW, 3*s);
-
-              // Supply side (left canister well)
-              rCtx.fillStyle = '#0a0a0a';
-              rCtx.beginPath();
-              rCtx.arc(chamberX + chamberW*0.12, chamberY + chamberH*0.5, chamberH*0.3, 0, Math.PI*2);
-              rCtx.fill();
-
-              // Take-up spool (right)
-              rCtx.fillStyle = '#0a0a0a';
-              rCtx.beginPath();
-              rCtx.arc(chamberX + chamberW*0.88, chamberY + chamberH*0.5, chamberH*0.25, 0, Math.PI*2);
-              rCtx.fill();
-
-              // Old roll (in left well, slides up and out) - spent canister
-              if (rollOut < 1) {
-                const rollCX = chamberX + chamberW * 0.12;
-                const rollCY = chamberY + chamberH * 0.5 - rollOut * chamberH * 1.2;
-                // Spent canister (dark, rounded rectangle)
-                const oCW = 20 * s, oCH = 26 * s;
-                const oCX = rollCX - oCW/2, oCY = rollCY - oCH/2;
-                const oCR = 4 * s;
-                rCtx.fillStyle = '#2a2a2a';
-                rCtx.beginPath(); rCtx.roundRect(oCX, oCY, oCW, oCH, oCR); rCtx.fill();
-                // Faded label
-                rCtx.fillStyle = '#4a4020';
-                rCtx.beginPath(); rCtx.roundRect(oCX + 2*s, oCY + 4*s, oCW - 4*s, oCH - 8*s, 2*s); rCtx.fill();
-                // Rim
-                rCtx.strokeStyle = '#444';
-                rCtx.lineWidth = 1*s;
-                rCtx.beginPath(); rCtx.roundRect(oCX, oCY, oCW, oCH, oCR); rCtx.stroke();
-                // Film tail trailing
-                rCtx.fillStyle = '#3d2e1e';
-                const tailH = Math.max(0, (1 - rollOut) * 22 * s);
-                rCtx.fillRect(rollCX - 2.5*s, rollCY + oCH/2, 5*s, tailH);
-              }
-
-              // New roll (drops into left well from above) - Kodak Gold
-              if (rollIn > 0) {
-                const newCX = chamberX + chamberW * 0.12;
-                const newCY = chamberY + chamberH * 0.5 + (1 - rollIn) * chamberH * 1.2;
-                // Canister body (Kodak Gold yellow, rounded rectangle)
-                const cW = 20 * s, cH = 26 * s;
-                const cX = newCX - cW/2, cY = newCY - cH/2;
-                const cr = 4 * s; // corner radius
-                // Gold/yellow gradient
-                const grad = rCtx.createLinearGradient(cX, cY, cX + cW, cY + cH);
-                grad.addColorStop(0, '#e6a800');
-                grad.addColorStop(0.3, '#ffcc00');
-                grad.addColorStop(0.7, '#e6a800');
-                grad.addColorStop(1, '#cc8800');
-                rCtx.fillStyle = grad;
-                rCtx.beginPath();
-                rCtx.roundRect(cX, cY, cW, cH, cr);
-                rCtx.fill();
-                // Red band at top (Kodak style)
-                rCtx.fillStyle = '#cc2200';
-                rCtx.beginPath();
-                rCtx.roundRect(cX, cY, cW, 6*s, [cr, cr, 0, 0]);
-                rCtx.fill();
-                // "KODAK" text
-                rCtx.fillStyle = '#cc2200';
-                rCtx.font = `bold ${Math.max(5, 3.5*s)}px sans-serif`;
-                rCtx.textAlign = 'center';
-                rCtx.fillText('KODAK', newCX, newCY + 1*s);
-                // "GOLD 200" below
-                rCtx.fillStyle = '#8b0000';
-                rCtx.font = `${Math.max(4, 2.5*s)}px sans-serif`;
-                rCtx.fillText('GOLD 200', newCX, newCY + 5*s);
-                rCtx.textAlign = 'left';
-                // Black bottom strip
-                rCtx.fillStyle = '#1a1a1a';
-                rCtx.beginPath();
-                rCtx.roundRect(cX, cY + cH - 5*s, cW, 5*s, [0, 0, cr, cr]);
-                rCtx.fill();
-                // Canister rim/edge highlight
-                rCtx.strokeStyle = 'rgba(255,255,255,0.3)';
-                rCtx.lineWidth = 1*s;
-                rCtx.beginPath();
-                rCtx.roundRect(cX, cY, cW, cH, cr);
-                rCtx.stroke();
-
-                // Film leader threading across to take-up spool
-                if (rollIn > 0.4) {
-                  const lp = (rollIn - 0.4) / 0.6;
-                  const leaderEndX = newCX + cW/2 + 2*s + lp * (chamberW * 0.65);
-                  const leaderY = chamberY + chamberH * 0.5 - 2.5*s;
-                  // Film strip (brownish)
-                  rCtx.fillStyle = '#3d2e1e';
-                  rCtx.fillRect(newCX + cW/2, leaderY, leaderEndX - (newCX + cW/2), 5*s);
-                  // Sprocket holes top & bottom
-                  rCtx.fillStyle = '#080808';
-                  const holeSpacing = 6 * s;
-                  const leaderLen = leaderEndX - (newCX + cW/2);
-                  for (let h = 0; h < leaderLen / holeSpacing; h++) {
-                    const hx = newCX + cW/2 + 2*s + h * holeSpacing;
-                    if (hx > leaderEndX - 2*s) break;
-                    rCtx.fillRect(hx, leaderY, 2*s, 1.5*s);
-                    rCtx.fillRect(hx, leaderY + 3.5*s, 2*s, 1.5*s);
-                  }
-                  // Leader tapers at end
-                  if (lp > 0.5) {
-                    rCtx.fillStyle = '#3d2e1e';
-                    rCtx.beginPath();
-                    rCtx.moveTo(leaderEndX, leaderY);
-                    rCtx.lineTo(leaderEndX + 4*s, leaderY + 2.5*s);
-                    rCtx.lineTo(leaderEndX, leaderY + 5*s);
-                    rCtx.fill();
-                  }
-                }
-              }
-              rCtx.globalAlpha = alpha;
-            }
-          } else {
-            // Closed back
-            rCtx.fillStyle = '#222';
-            rCtx.fillRect(chamberX, chamberY, chamberW, chamberH);
-            // Latch
-            rCtx.fillStyle = '#555';
-            rCtx.fillRect(chamberX + chamberW - 10*s, chamberY + chamberH*0.4, 8*s, 8*s);
-          }
-          rCtx.globalAlpha = 1;
+        if (FPS.imgSheet && FPS.imgSheet.complete && FPS.imgSheet.naturalWidth > 0) {
+          let drawH = H * 0.82;
+          let drawW = drawH * frameAspect;
+          if (drawW > W * 0.92) { drawW = W * 0.92; drawH = drawW / frameAspect; }
+          const dx = (W - drawW) / 2;
+          const dy = (H - drawH) / 2;
+          rCtx.drawImage(FPS.imgSheet, srcX, srcY, cellW, cellH, dx, dy, drawW, drawH);
         }
 
         // Fade to black as camera returns to face
