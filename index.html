@@ -631,6 +631,8 @@
           <div id="fpsViewfinderFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border:3px solid #333;box-shadow:inset 0 0 80px rgba(0,0,0,0.9);border-radius:8px;"></div>
           <div id="fpsPhotoCounter" style="position:absolute;bottom:12px;right:16px;color:#ff8800;font-family:'Courier New',monospace;font-size:14px;text-shadow:0 0 4px #ff8800;"></div>
           <div id="fpsViewfinderHint" style="position:absolute;bottom:12px;left:16px;color:#888;font-family:'Courier New',monospace;font-size:11px;">SCROLL or ←/→ to browse · E to reload film</div>
+          <div id="fpsViewfinderReloadBtn" style="position:absolute;top:16px;right:16px;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,136,0,0.6);display:flex;align-items:center;justify-content:center;color:#ff8800;font-family:'Courier New',monospace;font-size:10px;font-weight:bold;cursor:pointer;text-align:center;line-height:1.1;" onclick="fpsReloadFilm()">NEW<br>ROLL</div>
+          <div id="fpsViewfinderPutDownBtn" style="position:absolute;top:16px;left:16px;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;color:#aaa;font-family:'Courier New',monospace;font-size:9px;font-weight:bold;cursor:pointer;text-align:center;line-height:1.1;" onclick="hideFPSViewfinder()">PUT<br>DOWN</div>
           <div id="fpsReloadOverlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;z-index:5;">
             <canvas id="fpsReloadCanvas" style="width:100%;height:100%;display:block;"></canvas>
           </div>
@@ -1442,8 +1444,11 @@ Side: film photography (35mm), climbing, car tech.`,
 
       // Mobile stick input
       if (FPS.mobileMove && (Math.abs(FPS.mobileMove.x) > 0.1 || Math.abs(FPS.mobileMove.y) > 0.1)) {
-        nx += (sin * FPS.mobileMove.y - cos * FPS.mobileMove.x) * FPS.moveSpeed;
-        nz += (cos * FPS.mobileMove.y + sin * FPS.mobileMove.x) * FPS.moveSpeed;
+        // Forward/back along facing direction, strafe left/right
+        nx += sin * FPS.mobileMove.y * FPS.moveSpeed;
+        nz += cos * FPS.mobileMove.y * FPS.moveSpeed;
+        nx += cos * FPS.mobileMove.x * FPS.moveSpeed;
+        nz -= sin * FPS.mobileMove.x * FPS.moveSpeed;
         moved = true;
       }
       if (FPS.mobileLook && Math.abs(FPS.mobileLook.x) > 0.1) {
