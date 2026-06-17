@@ -767,6 +767,9 @@
     let dragState = null;
     let zCounter = 100;
 
+    // === ANALYTICS: Track app opens and time spent ===
+    const appOpenTimes = {};
+
     function openWindow(id) {
       const win = document.getElementById('win-' + id);
       if (!win) return;
@@ -779,6 +782,12 @@
       if (id === 'terminal') document.getElementById('commandInput').focus();
       if (id === 'wedwallet') startLinkCountdown('wedwallet', 'https://www.wedwallet.com');
       if (id === 'perlyn') startLinkCountdown('perlyn', 'https://www.perlyninc.com');
+
+      // GA4: track app open
+      if (!appOpenTimes[id]) {
+        appOpenTimes[id] = Date.now();
+        gtag('event', 'app_open', { app_name: id });
+      }
     }
 
     function startLinkCountdown(name, url) {
@@ -808,6 +817,13 @@
       updateTaskbar();
       if (id === 'wedwallet') clearInterval(window.wedwalletTimer);
       if (id === 'perlyn') clearInterval(window.perlynTimer);
+
+      // GA4: track app close with time spent
+      if (appOpenTimes[id]) {
+        const timeSpent = Math.round((Date.now() - appOpenTimes[id]) / 1000);
+        gtag('event', 'app_close', { app_name: id, time_spent_seconds: timeSpent });
+        delete appOpenTimes[id];
+      }
     }
 
     function minimizeWindow(id) {
@@ -2157,11 +2173,12 @@ Side: film photography (35mm), climbing, car tech.`,
       document.getElementById('fpsCrosshair').style.display = 'none';
       document.getElementById('fpsViewfinder').style.display = 'block';
       document.getElementById('fpsReloadOverlay').style.display = 'none';
-      FPS.rollStart = FPS.rollStart || 0; // first photo index of current roll
-      FPS.rollPos = 0; // position within current roll (0-35)
+      FPS.rollStart = FPS.rollStart || 0;
+      FPS.rollPos = 0;
       FPS.viewfinderPhotoIndex = FPS.rollStart;
       FPS.isReloading = false;
       updateFPSPhoto();
+      gtag('event', 'darkroom_camera_pickup', { roll_number: Math.floor(FPS.rollStart / 36) + 1 });
     }
 
     function hideFPSViewfinder() {
@@ -2493,6 +2510,7 @@ Side: film photography (35mm), climbing, car tech.`,
           FPS.isReloading = false;
           overlay.style.display = 'none';
           updateFPSPhoto();
+          gtag('event', 'darkroom_film_reload', { new_roll_number: Math.floor(FPS.rollStart / 36) + 1 });
         }
       }
       drawReloadFrame();
