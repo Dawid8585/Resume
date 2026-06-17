@@ -1792,8 +1792,9 @@ Side: film photography (35mm), climbing, car tech.`,
         const photoY = 0.05; // eye level center
 
         // Project 4 corners of the photo (inner image area)
-        // Use aspect-corrected Y projection so squares stay square
-        const aspectRatio = W / H;
+        // Aspect-corrected Y projection so squares stay square.
+        // Clamp to avoid photos/lights ballooning on wide landscape-mobile screens.
+        const aspectRatio = Math.min(W / H, 1.6);
         const pTL = project(wx - photoW/2, (photoY + photoH/2) * aspectRatio, wz);
         const pTR = project(wx + photoW/2, (photoY + photoH/2) * aspectRatio, wz);
         const pBL = project(wx - photoW/2, (photoY - photoH/2) * aspectRatio, wz);
