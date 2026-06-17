@@ -2252,9 +2252,9 @@ Side: film photography (35mm), climbing, car tech.`,
         const srcY = row * cellH;
 
         if (FPS.imgSheet && FPS.imgSheet.complete && FPS.imgSheet.naturalWidth > 0) {
-          let drawH = H * 0.82;
+          let drawH = H * 0.55;
           let drawW = drawH * frameAspect;
-          if (drawW > W * 0.92) { drawW = W * 0.92; drawH = drawW / frameAspect; }
+          if (drawW > W * 0.65) { drawW = W * 0.65; drawH = drawW / frameAspect; }
           const dx = (W - drawW) / 2;
           const dy = (H - drawH) / 2;
           rCtx.drawImage(FPS.imgSheet, srcX, srcY, cellW, cellH, dx, dy, drawW, drawH);
