@@ -631,6 +631,8 @@
           <div id="fpsViewfinderFrame" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border:3px solid #333;box-shadow:inset 0 0 80px rgba(0,0,0,0.9);border-radius:8px;"></div>
           <div id="fpsPhotoCounter" style="position:absolute;bottom:12px;right:16px;color:#ff8800;font-family:'Courier New',monospace;font-size:14px;text-shadow:0 0 4px #ff8800;"></div>
           <div id="fpsViewfinderHint" style="position:absolute;bottom:12px;left:16px;color:#888;font-family:'Courier New',monospace;font-size:11px;">SCROLL or ←/→ to browse · E to reload film</div>
+          <div id="fpsViewfinderReloadBtn" style="position:absolute;top:16px;right:16px;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,136,0,0.6);display:flex;align-items:center;justify-content:center;color:#ff8800;font-family:'Courier New',monospace;font-size:10px;font-weight:bold;cursor:pointer;text-align:center;line-height:1.1;" onclick="fpsReloadFilm()">NEW<br>ROLL</div>
+          <div id="fpsViewfinderPutDownBtn" style="position:absolute;top:16px;left:16px;width:50px;height:50px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;color:#aaa;font-family:'Courier New',monospace;font-size:9px;font-weight:bold;cursor:pointer;text-align:center;line-height:1.1;" onclick="hideFPSViewfinder()">PUT<br>DOWN</div>
           <div id="fpsReloadOverlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;z-index:5;">
             <canvas id="fpsReloadCanvas" style="width:100%;height:100%;display:block;"></canvas>
           </div>
@@ -767,6 +769,9 @@
     let dragState = null;
     let zCounter = 100;
 
+    // === ANALYTICS: Track app opens and time spent ===
+    const appOpenTimes = {};
+
     function openWindow(id) {
       const win = document.getElementById('win-' + id);
       if (!win) return;
@@ -779,6 +784,12 @@
       if (id === 'terminal') document.getElementById('commandInput').focus();
       if (id === 'wedwallet') startLinkCountdown('wedwallet', 'https://www.wedwallet.com');
       if (id === 'perlyn') startLinkCountdown('perlyn', 'https://www.perlyninc.com');
+
+      // GA4: track app open
+      if (!appOpenTimes[id]) {
+        appOpenTimes[id] = Date.now();
+        gtag('event', 'app_open', { app_name: id });
+      }
     }
 
     function startLinkCountdown(name, url) {
@@ -808,6 +819,13 @@
       updateTaskbar();
       if (id === 'wedwallet') clearInterval(window.wedwalletTimer);
       if (id === 'perlyn') clearInterval(window.perlynTimer);
+
+      // GA4: track app close with time spent
+      if (appOpenTimes[id]) {
+        const timeSpent = Math.round((Date.now() - appOpenTimes[id]) / 1000);
+        gtag('event', 'app_close', { app_name: id, time_spent_seconds: timeSpent });
+        delete appOpenTimes[id];
+      }
     }
 
     function minimizeWindow(id) {
@@ -1426,8 +1444,11 @@ Side: film photography (35mm), climbing, car tech.`,
 
       // Mobile stick input
       if (FPS.mobileMove && (Math.abs(FPS.mobileMove.x) > 0.1 || Math.abs(FPS.mobileMove.y) > 0.1)) {
-        nx += (sin * FPS.mobileMove.y - cos * FPS.mobileMove.x) * FPS.moveSpeed;
-        nz += (cos * FPS.mobileMove.y + sin * FPS.mobileMove.x) * FPS.moveSpeed;
+        // Forward/back along facing direction, strafe left/right
+        nx += sin * FPS.mobileMove.y * FPS.moveSpeed;
+        nz += cos * FPS.mobileMove.y * FPS.moveSpeed;
+        nx += cos * FPS.mobileMove.x * FPS.moveSpeed;
+        nz -= sin * FPS.mobileMove.x * FPS.moveSpeed;
         moved = true;
       }
       if (FPS.mobileLook && Math.abs(FPS.mobileLook.x) > 0.1) {
@@ -2157,11 +2178,12 @@ Side: film photography (35mm), climbing, car tech.`,
       document.getElementById('fpsCrosshair').style.display = 'none';
       document.getElementById('fpsViewfinder').style.display = 'block';
       document.getElementById('fpsReloadOverlay').style.display = 'none';
-      FPS.rollStart = FPS.rollStart || 0; // first photo index of current roll
-      FPS.rollPos = 0; // position within current roll (0-35)
+      FPS.rollStart = FPS.rollStart || 0;
+      FPS.rollPos = 0;
       FPS.viewfinderPhotoIndex = FPS.rollStart;
       FPS.isReloading = false;
       updateFPSPhoto();
+      gtag('event', 'darkroom_camera_pickup', { roll_number: Math.floor(FPS.rollStart / 36) + 1 });
     }
 
     function hideFPSViewfinder() {
@@ -2493,6 +2515,7 @@ Side: film photography (35mm), climbing, car tech.`,
           FPS.isReloading = false;
           overlay.style.display = 'none';
           updateFPSPhoto();
+          gtag('event', 'darkroom_film_reload', { new_roll_number: Math.floor(FPS.rollStart / 36) + 1 });
         }
       }
       drawReloadFrame();
