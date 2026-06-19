@@ -139,99 +139,126 @@ DARKROOM.buildMap = function() {
   for (let i = 0; i < M * M; i++) map[i] = DARKROOM.TILE_WALL;
 
   function setTile(x, y, t) { if (x >= 0 && x < M && y >= 0 && y < M) map[y * M + x] = t; }
-  function getTile(x, y) { return (x >= 0 && x < M && y >= 0 && y < M) ? map[y * M + x] : 1; }
-
-  // Room 1 - THE GALLERY (spawn room): 8x8, top-left at (1,1)
-  // Interior: x=2..8, y=2..8 (7 wide, 7 tall interior)
-  for (let y = 2; y <= 8; y++)
-    for (let x = 2; x <= 8; x++)
-      setTile(x, y, DARKROOM.TILE_EMPTY);
-
-  // North wall of gallery has photos - leave as wall (rendered with photo textures)
-  // South wall door to Contact Sheet Hall
-  setTile(5, 9, DARKROOM.TILE_DOOR_CLOSED); // Door south from gallery
-
-  // Room 2 - CONTACT SHEET HALL: long corridor, 2 wide x 16 long
-  // Runs south from gallery: x=4..6, y=9..24
-  for (let y = 10; y <= 24; y++)
-    for (let x = 4; x <= 6; x++)
-      setTile(x, y, DARKROOM.TILE_EMPTY);
-
-  // Contact sheet walls (sides of corridor are type 4)
-  for (let y = 10; y <= 24; y++) {
-    setTile(3, y, DARKROOM.TILE_CONTACT_WALL);
-    setTile(7, y, DARKROOM.TILE_CONTACT_WALL);
+  function rect(x1, y1, x2, y2, t) {
+    for (let y = y1; y <= y2; y++)
+      for (let x = x1; x <= x2; x++)
+        setTile(x, y, t);
   }
 
-  // Door at end of corridor to CRT room
-  setTile(5, 25, DARKROOM.TILE_DOOR_CLOSED);
+  // ==========================================================================
+  // LAYOUT (matching floor plan image):
+  //
+  //  Starting Gallery (far left, large)
+  //  Connected east to Main Hallway (long horizontal)
+  //  North of hallway (L to R): Contact Sheet Room, Negative Room, Exit/35mm Room
+  //  South of hallway (L to R): CRT/DpOS Room, Film Storage Room
+  //  EXIT door at far right end of hallway
+  //
+  // Map coordinates: X = east/west, Y = north/south
+  // Y=0 is top (north), Y=31 is bottom (south)
+  // ==========================================================================
 
-  // Room 3 - CRT / DpOS ROOM: 7x6 at (2,26) to (8,31)
-  for (let y = 26; y <= 30; y++)
-    for (let x = 3; x <= 8; x++)
-      setTile(x, y, DARKROOM.TILE_EMPTY);
+  // --- STARTING GALLERY ROOM (large, far left) ---
+  // Interior: x=1..6, y=11..19 (6 wide x 9 tall)
+  rect(1, 11, 6, 19, DARKROOM.TILE_EMPTY);
 
-  // CRT wall on north side of room
-  setTile(5, 25, DARKROOM.TILE_DOOR_CLOSED); // already set above, door between corridor & CRT
-  setTile(6, 26, DARKROOM.TILE_CRT_WALL);
+  // --- MAIN HALLWAY (long horizontal corridor) ---
+  // Runs from x=7 to x=29, y=14..16 (23 long x 3 wide)
+  rect(7, 14, 29, 16, DARKROOM.TILE_EMPTY);
 
-  // Door from CRT room to Negative Room (east side)
-  setTile(9, 28, DARKROOM.TILE_DOOR_CLOSED);
+  // --- Door from Gallery to Hallway (east wall of gallery) ---
+  setTile(7, 15, DARKROOM.TILE_EMPTY); // Already part of hallway, just ensure connected
 
-  // Room 4 - THE NEGATIVE ROOM: 7x6 at (10,26) to (16,31)
-  for (let y = 26; y <= 30; y++)
-    for (let x = 10; x <= 15; x++)
-      setTile(x, y, DARKROOM.TILE_EMPTY);
-
-  // Negative walls (surround negative room)
-  for (let x = 10; x <= 15; x++) {
-    setTile(x, 25, DARKROOM.TILE_NEGATIVE_WALL);
-    setTile(x, 31, DARKROOM.TILE_NEGATIVE_WALL);
+  // --- CONTACT SHEET ROOM (north, left side) ---
+  // Interior: x=9..14, y=5..12 (6 wide x 8 tall)
+  rect(9, 5, 14, 12, DARKROOM.TILE_EMPTY);
+  // Contact sheet walls on north/south interior
+  for (let x = 9; x <= 14; x++) {
+    setTile(x, 4, DARKROOM.TILE_CONTACT_WALL);
   }
-  for (let y = 26; y <= 30; y++) {
-    setTile(16, y, DARKROOM.TILE_NEGATIVE_WALL);
+  // Doorway connecting to hallway (south side)
+  setTile(11, 13, DARKROOM.TILE_DOOR_CLOSED);
+  rect(11, 13, 11, 13, DARKROOM.TILE_DOOR_CLOSED);
+
+  // --- NEGATIVE ROOM (north, center) ---
+  // Interior: x=16..21, y=5..12 (6 wide x 8 tall)
+  rect(16, 5, 21, 12, DARKROOM.TILE_EMPTY);
+  // Negative walls surrounding
+  for (let x = 16; x <= 21; x++) {
+    setTile(x, 4, DARKROOM.TILE_NEGATIVE_WALL);
   }
+  for (let y = 5; y <= 12; y++) {
+    setTile(15, y, DARKROOM.TILE_NEGATIVE_WALL);
+    setTile(22, y, DARKROOM.TILE_NEGATIVE_WALL);
+  }
+  // Doorway connecting to hallway (south)
+  setTile(18, 13, DARKROOM.TILE_DOOR_CLOSED);
 
-  // Door from Negative Room to Exit Corridor (south)
-  setTile(12, 31, DARKROOM.TILE_DOOR_CLOSED);
+  // --- EXIT / 35MM ROOM (north, right side) ---
+  // Interior: x=24..29, y=5..12 (6 wide x 8 tall)
+  rect(24, 5, 29, 12, DARKROOM.TILE_EMPTY);
+  // Doorway connecting to hallway (south)
+  setTile(26, 13, DARKROOM.TILE_DOOR_CLOSED);
 
-  // Room 5 - EXIT CORRIDOR: short hallway south from negative room
-  // x=11..13, y=31..34 - but map is 32, so use available space
-  // Adjust: make exit corridor at y=26..30 but east of negative room
-  // Actually let's rework: put exit corridor going north from negative room
-  // Better approach: exit door on east wall of negative room
-  setTile(16, 28, DARKROOM.TILE_EXIT_DOOR);
+  // --- CRT / DpOS ROOM (south, left side) ---
+  // Interior: x=9..14, y=18..25 (6 wide x 8 tall)
+  rect(9, 18, 14, 25, DARKROOM.TILE_EMPTY);
+  // CRT wall on north interior
+  setTile(11, 18, DARKROOM.TILE_CRT_WALL);
+  setTile(12, 18, DARKROOM.TILE_CRT_WALL);
+  // Doorway connecting to hallway (north)
+  setTile(11, 17, DARKROOM.TILE_DOOR_CLOSED);
 
-  // Small exit hallway x=16..18, y=27..29
-  for (let y = 27; y <= 29; y++)
-    for (let x = 17; x <= 18; x++)
-      setTile(x, y, DARKROOM.TILE_EMPTY);
+  // --- FILM STORAGE ROOM (south, right side) ---
+  // Interior: x=18..25, y=18..25 (8 wide x 8 tall)
+  rect(18, 18, 25, 25, DARKROOM.TILE_EMPTY);
+  // Doorway connecting to hallway (north)
+  setTile(21, 17, DARKROOM.TILE_DOOR_CLOSED);
 
-  // Secret push-wall in gallery (reveals dev room)
-  // East wall of gallery, middle
-  setTile(9, 5, DARKROOM.TILE_PUSH_WALL);
+  // --- EXIT DOOR (far right end of main hallway) ---
+  setTile(30, 15, DARKROOM.TILE_EXIT_DOOR);
 
-  // Dev room behind push-wall: x=10..12, y=4..6
-  for (let y = 4; y <= 6; y++)
-    for (let x = 10; x <= 12; x++)
-      setTile(x, y, DARKROOM.TILE_EMPTY);
-  // Block the entrance until push-wall opens
-  setTile(9, 5, DARKROOM.TILE_PUSH_WALL);
+  // --- Connector corridors from hallway to rooms (1-tile wide passages) ---
+  // Contact Sheet: hallway y=14 up to room y=12, at x=11
+  rect(11, 13, 11, 13, DARKROOM.TILE_DOOR_CLOSED);
+
+  // Negative Room: hallway y=14 up to room y=12, at x=18
+  rect(18, 13, 18, 13, DARKROOM.TILE_DOOR_CLOSED);
+
+  // Exit/35mm Room: hallway y=14 up to room y=12, at x=26
+  rect(26, 13, 26, 13, DARKROOM.TILE_DOOR_CLOSED);
+
+  // CRT Room: hallway y=16 down to room y=18, at x=11
+  rect(11, 17, 11, 17, DARKROOM.TILE_DOOR_CLOSED);
+
+  // Film Storage: hallway y=16 down to room y=18, at x=21
+  rect(21, 17, 21, 17, DARKROOM.TILE_DOOR_CLOSED);
+
+  // --- SECRET PUSH-WALL in Gallery (east wall, reveals hidden alcove) ---
+  setTile(7, 13, DARKROOM.TILE_PUSH_WALL);
+
+  // Dev room behind push-wall: x=8..9, y=12..14 (small alcove)
+  // This overlaps with hallway area so instead put it off gallery north wall
+  setTile(3, 10, DARKROOM.TILE_PUSH_WALL);
+  // Dev alcove: x=2..4, y=8..9
+  rect(2, 8, 4, 9, DARKROOM.TILE_EMPTY);
+  // Block until push-wall opens
+  setTile(3, 10, DARKROOM.TILE_PUSH_WALL);
 
   DARKROOM.map = map;
 
-  // Setup sprites
+  // === SPRITES ===
   DARKROOM.sprites = [
-    // Camera on podium in gallery
-    { x: 5.5, y: 3.5, type: 'camera', active: true },
-    // Film canisters (3 collectibles)
-    { x: 5.5, y: 15, type: 'canister', active: true, id: 0 },
-    { x: 4.5, y: 28, type: 'canister', active: true, id: 1 },
-    { x: 13, y: 28, type: 'canister', active: true, id: 2 },
-    // Floppy disk (hidden in dev room)
-    { x: 11, y: 5, type: 'floppy', active: true },
-    // CRT monitor in CRT room
-    { x: 6.5, y: 26.5, type: 'crt', active: true }
+    // Camera on podium in Starting Gallery
+    { x: 3.5, y: 15, type: 'camera', active: true },
+    // Film canisters (3 collectibles spread across map)
+    { x: 12, y: 8, type: 'canister', active: true, id: 0 },   // Contact Sheet Room
+    { x: 21.5, y: 22, type: 'canister', active: true, id: 1 }, // Film Storage Room
+    { x: 27, y: 8, type: 'canister', active: true, id: 2 },    // Exit/35mm Room
+    // Floppy disk (hidden in dev alcove)
+    { x: 3, y: 8.5, type: 'floppy', active: true },
+    // CRT monitor in CRT/DpOS Room
+    { x: 11.5, y: 19, type: 'crt', active: true }
   ];
 
   // Load saved secrets
@@ -579,10 +606,10 @@ DARKROOM.init = function() {
   DARKROOM.generateTextures();
   DARKROOM.preloadAssets();
 
-  // Reset player
-  DARKROOM.player.x = 5.5;
-  DARKROOM.player.y = 5.5;
-  DARKROOM.player.angle = Math.PI; // Face south (toward corridor)
+  // Reset player (spawn in Starting Gallery, facing east toward hallway)
+  DARKROOM.player.x = 3.5;
+  DARKROOM.player.y = 15.5;
+  DARKROOM.player.angle = Math.PI / 2; // Face east
   DARKROOM.player.pitch = 0;
   DARKROOM.player.bobPhase = 0;
   DARKROOM.player.bobAmount = 0;
@@ -832,18 +859,22 @@ DARKROOM.getCurrentRoom = function() {
   const px = DARKROOM.player.x;
   const py = DARKROOM.player.y;
 
-  // Gallery: x=2..8, y=2..8
-  if (px >= 2 && px <= 9 && py >= 2 && py <= 9) return 'gallery';
-  // Contact Sheet Hall: x=4..6, y=10..24
-  if (px >= 3 && px <= 7 && py >= 9 && py <= 25) return 'corridor';
-  // CRT Room: x=3..8, y=26..30
-  if (px >= 3 && px <= 9 && py >= 25 && py <= 31) return 'crt';
-  // Negative Room: x=10..15, y=26..30
-  if (px >= 9 && px <= 16 && py >= 25 && py <= 31) return 'negative';
-  // Exit corridor: x=16..18, y=27..29
-  if (px >= 16 && py >= 27 && py <= 29) return 'exit';
-  // Dev room: x=10..12, y=4..6
-  if (px >= 9 && px <= 13 && py >= 4 && py <= 7) return 'gallery';
+  // Starting Gallery: x=1..6, y=11..19
+  if (px >= 1 && px <= 7 && py >= 11 && py <= 19) return 'gallery';
+  // Contact Sheet Room: x=9..14, y=5..12
+  if (px >= 9 && px <= 14 && py >= 5 && py <= 12) return 'corridor';
+  // Negative Room: x=16..21, y=5..12
+  if (px >= 15 && px <= 22 && py >= 4 && py <= 12) return 'negative';
+  // Exit/35mm Room: x=24..29, y=5..12
+  if (px >= 24 && px <= 29 && py >= 5 && py <= 12) return 'exit';
+  // CRT/DpOS Room: x=9..14, y=18..25
+  if (px >= 9 && px <= 14 && py >= 17 && py <= 25) return 'crt';
+  // Film Storage Room: x=18..25, y=18..25
+  if (px >= 18 && px <= 25 && py >= 17 && py <= 25) return 'corridor';
+  // Main Hallway: x=7..29, y=14..16
+  if (px >= 7 && px <= 30 && py >= 14 && py <= 16) return 'gallery';
+  // Dev alcove: x=2..4, y=8..9
+  if (px >= 2 && px <= 4 && py >= 8 && py <= 10) return 'gallery';
   return 'gallery';
 };
 
@@ -1089,8 +1120,8 @@ DARKROOM.loadSecrets = function() {
       if (DARKROOM.secrets.devRoom) {
         DARKROOM.pushWall.active = true;
         DARKROOM.pushWall.progress = 1;
-        // Open the push-wall tile
-        DARKROOM.map[5 * DARKROOM.MAP_SIZE + 9] = DARKROOM.TILE_EMPTY;
+        // Open the push-wall tile (y=10, x=3 in new layout)
+        DARKROOM.map[10 * DARKROOM.MAP_SIZE + 3] = DARKROOM.TILE_EMPTY;
       }
     }
   } catch (e) { /* ignore */ }
