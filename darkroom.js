@@ -166,73 +166,53 @@ DARKROOM.buildMap = function() {
   // Runs from x=7 to x=29, y=14..16 (23 long x 3 wide)
   rect(7, 14, 29, 16, DARKROOM.TILE_EMPTY);
 
-  // --- Door from Gallery to Hallway (east wall of gallery) ---
-  setTile(7, 15, DARKROOM.TILE_EMPTY); // Already part of hallway, just ensure connected
+  // Gallery connects directly to hallway (open passage, no door)
+  // Gallery east wall at x=7 is already hallway, open at y=14..16
 
   // --- CONTACT SHEET ROOM (north, left side) ---
-  // Interior: x=9..14, y=5..12 (6 wide x 8 tall)
-  rect(9, 5, 14, 12, DARKROOM.TILE_EMPTY);
-  // Contact sheet walls on north/south interior
+  // Interior: x=9..14, y=6..12 (6 wide x 7 tall)
+  rect(9, 6, 14, 12, DARKROOM.TILE_EMPTY);
+  // Contact sheet walls on north side
   for (let x = 9; x <= 14; x++) {
-    setTile(x, 4, DARKROOM.TILE_CONTACT_WALL);
+    setTile(x, 5, DARKROOM.TILE_CONTACT_WALL);
   }
-  // Doorway connecting to hallway (south side)
+  // Door at y=13, connector passage at x=11 (between room y=12 and hallway y=14)
   setTile(11, 13, DARKROOM.TILE_DOOR_CLOSED);
-  rect(11, 13, 11, 13, DARKROOM.TILE_DOOR_CLOSED);
 
   // --- NEGATIVE ROOM (north, center) ---
-  // Interior: x=16..21, y=5..12 (6 wide x 8 tall)
-  rect(16, 5, 21, 12, DARKROOM.TILE_EMPTY);
+  // Interior: x=16..21, y=6..12 (6 wide x 7 tall)
+  rect(16, 6, 21, 12, DARKROOM.TILE_EMPTY);
   // Negative walls surrounding
   for (let x = 16; x <= 21; x++) {
-    setTile(x, 4, DARKROOM.TILE_NEGATIVE_WALL);
+    setTile(x, 5, DARKROOM.TILE_NEGATIVE_WALL);
   }
-  for (let y = 5; y <= 12; y++) {
+  for (let y = 6; y <= 12; y++) {
     setTile(15, y, DARKROOM.TILE_NEGATIVE_WALL);
     setTile(22, y, DARKROOM.TILE_NEGATIVE_WALL);
   }
-  // Doorway connecting to hallway (south)
+  // Door at y=13, connector at x=18
   setTile(18, 13, DARKROOM.TILE_DOOR_CLOSED);
 
   // --- EXIT / 35MM ROOM (north, right side) ---
-  // Interior: x=24..29, y=5..12 (6 wide x 8 tall)
-  rect(24, 5, 29, 12, DARKROOM.TILE_EMPTY);
-  // Doorway connecting to hallway (south)
+  // Interior: x=24..29, y=6..12 (6 wide x 7 tall)
+  rect(24, 6, 29, 12, DARKROOM.TILE_EMPTY);
+  // Door at y=13, connector at x=26
   setTile(26, 13, DARKROOM.TILE_DOOR_CLOSED);
 
   // --- CRT / DpOS ROOM (south, left side) ---
-  // Interior: x=9..14, y=18..25 (6 wide x 8 tall)
-  rect(9, 18, 14, 25, DARKROOM.TILE_EMPTY);
-  // CRT wall on north interior
-  setTile(11, 18, DARKROOM.TILE_CRT_WALL);
-  setTile(12, 18, DARKROOM.TILE_CRT_WALL);
-  // Doorway connecting to hallway (north)
+  // Interior: x=9..14, y=18..24 (6 wide x 7 tall)
+  rect(9, 18, 14, 24, DARKROOM.TILE_EMPTY);
+  // Door at y=17, connector at x=11 (between hallway y=16 and room y=18)
   setTile(11, 17, DARKROOM.TILE_DOOR_CLOSED);
 
   // --- FILM STORAGE ROOM (south, right side) ---
-  // Interior: x=18..25, y=18..25 (8 wide x 8 tall)
-  rect(18, 18, 25, 25, DARKROOM.TILE_EMPTY);
-  // Doorway connecting to hallway (north)
+  // Interior: x=18..25, y=18..24 (8 wide x 7 tall)
+  rect(18, 18, 25, 24, DARKROOM.TILE_EMPTY);
+  // Door at y=17, connector at x=21
   setTile(21, 17, DARKROOM.TILE_DOOR_CLOSED);
 
   // --- EXIT DOOR (far right end of main hallway) ---
   setTile(30, 15, DARKROOM.TILE_EXIT_DOOR);
-
-  // --- Connector corridors from hallway to rooms (1-tile wide passages) ---
-  // Contact Sheet: hallway y=14 up to room y=12, at x=11
-  rect(11, 13, 11, 13, DARKROOM.TILE_DOOR_CLOSED);
-
-  // Negative Room: hallway y=14 up to room y=12, at x=18
-  rect(18, 13, 18, 13, DARKROOM.TILE_DOOR_CLOSED);
-
-  // Exit/35mm Room: hallway y=14 up to room y=12, at x=26
-  rect(26, 13, 26, 13, DARKROOM.TILE_DOOR_CLOSED);
-
-  // CRT Room: hallway y=16 down to room y=18, at x=11
-  rect(11, 17, 11, 17, DARKROOM.TILE_DOOR_CLOSED);
-
-  // Film Storage: hallway y=16 down to room y=18, at x=21
-  rect(21, 17, 21, 17, DARKROOM.TILE_DOOR_CLOSED);
 
   // --- SECRET PUSH-WALL in Gallery (east wall, reveals hidden alcove) ---
   setTile(7, 13, DARKROOM.TILE_PUSH_WALL);
@@ -250,15 +230,15 @@ DARKROOM.buildMap = function() {
   // === SPRITES ===
   DARKROOM.sprites = [
     // Camera on podium in Starting Gallery
-    { x: 3.5, y: 15, type: 'camera', active: true },
+    { x: 3.5, y: 15.5, type: 'camera', active: true },
     // Film canisters (3 collectibles spread across map)
-    { x: 12, y: 8, type: 'canister', active: true, id: 0 },   // Contact Sheet Room
-    { x: 21.5, y: 22, type: 'canister', active: true, id: 1 }, // Film Storage Room
-    { x: 27, y: 8, type: 'canister', active: true, id: 2 },    // Exit/35mm Room
+    { x: 12, y: 9, type: 'canister', active: true, id: 0 },   // Contact Sheet Room
+    { x: 21.5, y: 21, type: 'canister', active: true, id: 1 }, // Film Storage Room
+    { x: 27, y: 9, type: 'canister', active: true, id: 2 },    // Exit/35mm Room
     // Floppy disk (hidden in dev alcove)
     { x: 3, y: 8.5, type: 'floppy', active: true },
     // CRT monitor in CRT/DpOS Room
-    { x: 11.5, y: 19, type: 'crt', active: true }
+    { x: 11.5, y: 20, type: 'crt', active: true }
   ];
 
   // Load saved secrets
@@ -531,6 +511,11 @@ DARKROOM.updateBoot = function(dt) {
     if (DARKROOM.boot.timer > 0.8) {
       DARKROOM.boot.complete = true;
       DARKROOM.booted = true;
+      // Remove boot overlay
+      var overlay = document.getElementById('darkroomBootOverlay');
+      if (overlay) overlay.remove();
+      var hudEl = document.getElementById('fpsHUD');
+      if (hudEl) hudEl.innerHTML = '';
     }
     return;
   }
@@ -554,31 +539,29 @@ DARKROOM.updateBoot = function(dt) {
 };
 
 DARKROOM.renderBoot = function() {
+  // Render boot sequence as HTML overlay for crisp text
   const ctx = DARKROOM.renderCtx;
   const W = DARKROOM.RENDER_W, H = DARKROOM.RENDER_H;
 
+  // Black canvas background
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, W, H);
 
-  ctx.font = '5px monospace';
-  ctx.textBaseline = 'top';
-
-  const lineH = 8;
-  const startX = 6;
-  const startY = 6;
-
-  for (let i = 0; i < DARKROOM.boot.displayLines.length; i++) {
-    const text = DARKROOM.boot.displayLines[i] || '';
-    const isOK = text.includes('[OK]');
-    ctx.fillStyle = isOK ? '#00ff00' : '#00cc00';
-    ctx.fillText(text, startX, startY + i * lineH);
-  }
-
-  // Blinking cursor
-  if (Math.floor(Date.now() / 400) % 2 === 0) {
-    const cy = startY + DARKROOM.boot.displayLines.length * lineH;
-    ctx.fillStyle = '#00ff00';
-    ctx.fillRect(startX, cy, 4, 5);
+  // Use the fpsHUD element to display boot text (repurposed during boot)
+  var hudEl = document.getElementById('fpsHUD');
+  if (hudEl) {
+    var html = '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:3;padding:20px;font-family:\'Courier New\',monospace;font-size:13px;line-height:1.6;color:#0f0;overflow:hidden;" id="darkroomBootOverlay">';
+    for (var i = 0; i < DARKROOM.boot.displayLines.length; i++) {
+      var text = DARKROOM.boot.displayLines[i] || '';
+      var color = text.includes('[OK]') ? '#0f0' : '#0c0';
+      html += '<div style="color:' + color + '">' + text.replace(/</g, '&lt;') + '</div>';
+    }
+    // Blinking cursor
+    if (Math.floor(Date.now() / 400) % 2 === 0) {
+      html += '<div style="display:inline-block;width:8px;height:14px;background:#0f0;margin-top:2px;"></div>';
+    }
+    html += '</div>';
+    hudEl.innerHTML = html;
   }
 };
 
@@ -870,19 +853,19 @@ DARKROOM.getCurrentRoom = function() {
 
   // Starting Gallery: x=1..6, y=11..19
   if (px >= 1 && px <= 7 && py >= 11 && py <= 19) return 'gallery';
-  // Contact Sheet Room: x=9..14, y=5..12
-  if (px >= 9 && px <= 14 && py >= 5 && py <= 12) return 'corridor';
-  // Negative Room: x=16..21, y=5..12
-  if (px >= 15 && px <= 22 && py >= 4 && py <= 12) return 'negative';
-  // Exit/35mm Room: x=24..29, y=5..12
-  if (px >= 24 && px <= 29 && py >= 5 && py <= 12) return 'exit';
-  // CRT/DpOS Room: x=9..14, y=18..25
+  // Contact Sheet Room: x=9..14, y=6..12
+  if (px >= 9 && px <= 14 && py >= 5 && py <= 13) return 'corridor';
+  // Negative Room: x=16..21, y=6..12
+  if (px >= 15 && px <= 22 && py >= 5 && py <= 13) return 'negative';
+  // Exit/35mm Room: x=24..29, y=6..12
+  if (px >= 24 && px <= 29 && py >= 5 && py <= 13) return 'exit';
+  // CRT/DpOS Room: x=9..14, y=18..24
   if (px >= 9 && px <= 14 && py >= 17 && py <= 25) return 'crt';
-  // Film Storage Room: x=18..25, y=18..25
+  // Film Storage Room: x=18..25, y=18..24
   if (px >= 18 && px <= 25 && py >= 17 && py <= 25) return 'corridor';
-  // Main Hallway: x=7..29, y=14..16
+  // Main Hallway: x=7..30, y=14..16
   if (px >= 7 && px <= 30 && py >= 14 && py <= 16) return 'gallery';
-  // Dev alcove: x=2..4, y=8..9
+  // Dev alcove
   if (px >= 2 && px <= 4 && py >= 8 && py <= 10) return 'gallery';
   return 'gallery';
 };
@@ -1599,20 +1582,8 @@ DARKROOM.renderHUD = function() {
   const W = DARKROOM.RENDER_W;
   const H = DARKROOM.RENDER_H;
   const hud = DARKROOM.hud;
-  const A = DARKROOM.assets;
 
-  // Render HUD background bar in the low-res canvas (dark strip at bottom)
-  const hudH = 14;
-  const hudY = H - hudH;
-  const hudImg = A.hud;
-  if (hudImg && hudImg.complete && hudImg.naturalWidth) {
-    ctx.drawImage(hudImg, 0, 0, hudImg.naturalWidth, hudImg.naturalHeight, 0, hudY, W, hudH);
-  } else {
-    ctx.fillStyle = 'rgba(0,0,0,0.9)';
-    ctx.fillRect(0, hudY, W, hudH);
-    ctx.fillStyle = '#003300';
-    ctx.fillRect(0, hudY, W, 1);
-  }
+  // No canvas HUD rendering - everything is HTML overlay for readability
 
   // Render HUD TEXT via the HTML overlay (crisp, native resolution)
   var hudEl = document.getElementById('fpsHUD');
@@ -1620,17 +1591,21 @@ DARKROOM.renderHUD = function() {
     var lightColor = hud.light === 'RED SAFE' ? '#ff3333' : '#0f0';
     hudEl.innerHTML =
       '<span style="color:#0f0">ROLL:' + String(hud.roll).padStart(2, '0') + '</span>' +
-      ' &nbsp; <span style="color:#0f0">FR:' + String(hud.frame).padStart(2, '0') + '/36</span>' +
-      ' &nbsp; <span style="color:#0a0">' + hud.filmStock + '</span>' +
-      ' &nbsp; <span style="color:' + lightColor + '">' + hud.light + '</span>' +
-      ' &nbsp; <span style="color:#ffaa00">\u25CE ' + hud.canisterCount + '/' + hud.canisterTotal + '</span>';
+      '<span style="color:#333"> | </span>' +
+      '<span style="color:#0f0">FRAME:' + String(hud.frame).padStart(2, '0') + '/36</span>' +
+      '<span style="color:#333"> | </span>' +
+      '<span style="color:#0a0">' + hud.filmStock + '</span>' +
+      '<span style="color:#333"> | </span>' +
+      '<span style="color:' + lightColor + '">LIGHT:' + hud.light + '</span>' +
+      '<span style="color:#333"> | </span>' +
+      '<span style="color:#ffaa00">\u25CE ' + hud.canisterCount + '/' + hud.canisterTotal + '</span>';
   }
 
-  // Interaction message via crosshair element (repurposed when there's a message)
+  // Interaction message via crosshair element
   var crosshair = document.getElementById('fpsCrosshair');
   if (crosshair) {
     if (hud.interactMsg && !DARKROOM.viewfinder.active) {
-      crosshair.innerHTML = '+<br><span style="font-size:11px;color:#0f0;text-shadow:0 0 6px #0f0;">' + hud.interactMsg + '</span>';
+      crosshair.innerHTML = '+<br><span style="font-size:12px;color:#0f0;text-shadow:0 0 6px #0f0;">' + hud.interactMsg + '</span>';
     } else if (!DARKROOM.viewfinder.active) {
       crosshair.innerHTML = '+';
     }
