@@ -636,6 +636,15 @@ DARKROOM.init = function() {
   document.getElementById('fpsViewfinder').style.display = 'none';
   document.getElementById('fpsCrosshair').style.display = 'block';
 
+  // Hide window titlebar for immersive fullscreen feel
+  var titlebar = document.querySelector('#win-fps .window-titlebar');
+  if (titlebar) titlebar.style.display = 'none';
+  // Make window body fill entire window with no borders
+  var winBody = document.getElementById('fpsBody');
+  if (winBody) { winBody.style.margin = '0'; winBody.style.border = 'none'; }
+  var winEl = document.getElementById('win-fps');
+  if (winEl) { winEl.style.border = 'none'; winEl.style.boxShadow = 'none'; }
+
   // Start game loop
   DARKROOM.active = true;
   DARKROOM.gameLoop();
@@ -1150,6 +1159,16 @@ DARKROOM.stop = function() {
   if (document.pointerLockElement) {
     document.exitPointerLock();
   }
+  // Restore window titlebar and styles
+  var titlebar = document.querySelector('#win-fps .window-titlebar');
+  if (titlebar) titlebar.style.display = '';
+  var winBody = document.getElementById('fpsBody');
+  if (winBody) { winBody.style.margin = ''; winBody.style.border = ''; }
+  var winEl = document.getElementById('win-fps');
+  if (winEl) { winEl.style.border = ''; winEl.style.boxShadow = ''; }
+  // Clear HUD text
+  var hudEl = document.getElementById('fpsHUD');
+  if (hudEl) hudEl.innerHTML = '';
 };
 
 // ============================================================================
@@ -1581,61 +1600,46 @@ DARKROOM.renderHUD = function() {
   const H = DARKROOM.RENDER_H;
   const hud = DARKROOM.hud;
   const A = DARKROOM.assets;
-  const hudH = 18;
-  const hudY = H - hudH;
 
-  // HUD background - use darkroom_hud.png asset if available
+  // Render HUD background bar in the low-res canvas (dark strip at bottom)
+  const hudH = 14;
+  const hudY = H - hudH;
   const hudImg = A.hud;
   if (hudImg && hudImg.complete && hudImg.naturalWidth) {
     ctx.drawImage(hudImg, 0, 0, hudImg.naturalWidth, hudImg.naturalHeight, 0, hudY, W, hudH);
   } else {
-    ctx.fillStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillStyle = 'rgba(0,0,0,0.9)';
     ctx.fillRect(0, hudY, W, hudH);
-    ctx.fillStyle = '#004400';
+    ctx.fillStyle = '#003300';
     ctx.fillRect(0, hudY, W, 1);
   }
 
-  // HUD text
-  ctx.font = '6px monospace';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#00cc00';
-
-  const textY = hudY + hudH / 2 + 1;
-
-  // ROLL
-  ctx.textAlign = 'left';
-  ctx.fillText('ROLL:' + String(hud.roll).padStart(2, '0'), 4, textY);
-
-  // FRAME
-  ctx.fillText('FR:' + String(hud.frame).padStart(2, '0') + '/36', 52, textY);
-
-  // FILM stock
-  ctx.fillStyle = '#009900';
-  ctx.fillText(hud.filmStock.substring(0, 12), 100, textY);
-
-  // LIGHT indicator
-  ctx.fillStyle = hud.light === 'RED SAFE' ? '#ff3333' : '#00cc00';
-  ctx.fillText(hud.light, 170, textY);
-
-  // Canister count
-  ctx.fillStyle = '#ffaa00';
-  ctx.textAlign = 'left';
-  ctx.fillText('\u25CE ' + hud.canisterCount + '/' + hud.canisterTotal, 220, textY);
-
-  // Interaction message (center top)
-  if (hud.interactMsg) {
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#00ff00';
-    ctx.font = '6px monospace';
-    ctx.fillText(hud.interactMsg, W / 2, H - hudH - 12);
+  // Render HUD TEXT via the HTML overlay (crisp, native resolution)
+  var hudEl = document.getElementById('fpsHUD');
+  if (hudEl) {
+    var lightColor = hud.light === 'RED SAFE' ? '#ff3333' : '#0f0';
+    hudEl.innerHTML =
+      '<span style="color:#0f0">ROLL:' + String(hud.roll).padStart(2, '0') + '</span>' +
+      ' &nbsp; <span style="color:#0f0">FR:' + String(hud.frame).padStart(2, '0') + '/36</span>' +
+      ' &nbsp; <span style="color:#0a0">' + hud.filmStock + '</span>' +
+      ' &nbsp; <span style="color:' + lightColor + '">' + hud.light + '</span>' +
+      ' &nbsp; <span style="color:#ffaa00">\u25CE ' + hud.canisterCount + '/' + hud.canisterTotal + '</span>';
   }
 
-  // Flicker overlay
+  // Interaction message via crosshair element (repurposed when there's a message)
+  var crosshair = document.getElementById('fpsCrosshair');
+  if (crosshair) {
+    if (hud.interactMsg && !DARKROOM.viewfinder.active) {
+      crosshair.innerHTML = '+<br><span style="font-size:11px;color:#0f0;text-shadow:0 0 6px #0f0;">' + hud.interactMsg + '</span>';
+    } else if (!DARKROOM.viewfinder.active) {
+      crosshair.innerHTML = '+';
+    }
+  }
+
+  // Flicker overlay (still rendered in canvas for retro look)
   if (DARKROOM.flicker.active) {
     DARKROOM.renderFlickerOverlay(ctx, W, H);
   }
-
-  ctx.textAlign = 'left';
 };
 
 // ============================================================================

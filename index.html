@@ -334,7 +334,7 @@
         bottom: 120px !important; right: 35px !important;
         font-size: 12px !important;
       }
-      #fpsHUD { font-size: 10px !important; bottom: 4px !important; }
+      #fpsHUD { font-size: 9px !important; bottom: 0 !important; padding: 3px 6px !important; }
       #fpsPhotoCounter { font-size: 11px !important; }
       #fpsViewfinderHint { font-size: 9px !important; }
     }
@@ -621,8 +621,8 @@
         </div>
       </div>
       <div class="window-body" id="fpsBody" style="background:#000;padding:0;position:relative;overflow:hidden;cursor:crosshair;touch-action:none;">
-        <canvas id="fpsCanvas" style="width:100%;height:100%;display:block;touch-action:none;"></canvas>
-        <div id="fpsHUD" style="position:absolute;bottom:8px;left:0;right:0;text-align:center;color:#0f0;font-family:'Courier New',monospace;font-size:12px;text-shadow:0 0 4px #0f0;pointer-events:none;"></div>
+        <canvas id="fpsCanvas" style="width:100%;height:100%;display:block;touch-action:none;image-rendering:pixelated;image-rendering:crisp-edges;"></canvas>
+        <div id="fpsHUD" style="position:absolute;bottom:0;left:0;right:0;padding:4px 10px;background:rgba(0,0,0,0.85);color:#0f0;font-family:'Courier New',monospace;font-size:11px;text-shadow:0 0 4px #0f0;pointer-events:none;border-top:1px solid #003300;letter-spacing:0.5px;z-index:2;"></div>
         <div id="fpsCrosshair" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#0f0;font-size:24px;pointer-events:none;text-shadow:0 0 4px #0f0;">+</div>
         <!-- Mobile touch controls -->
         <div id="fpsMobileControls" style="display:none;position:absolute;bottom:0;left:0;right:0;top:0;pointer-events:none;">
